@@ -1,0 +1,1295 @@
+\documentclass[12pt,letterpaper,oneside]{report}
+
+% ================================================================
+% Informe autocontenido del Laboratorio 01
+% Compila con: pdflatex INFORME_LABORATORIO_01.tex (dos veces)
+% No requiere imágenes externas: los diagramas se dibujan con LaTeX.
+% ================================================================
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+% `provide=*` permite usar la configuración moderna de babel aun cuando una
+% instalación mínima de TeX no incluya el archivo heredado spanish.ldf.
+\usepackage[provide=*,spanish]{babel}
+\usepackage{lmodern}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{verbatim}
+\usepackage{float}
+\usepackage{url}
+\usepackage{hyperref}
+
+\geometry{top=2.3cm,bottom=2.4cm,left=2.5cm,right=2.5cm}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.65em}
+\setlength{\emergencystretch}{3em}
+\raggedbottom
+\renewcommand{\arraystretch}{1.2}
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{2}
+
+\definecolor{uvgblue}{HTML}{123B65}
+\definecolor{compipurple}{HTML}{6D4AFF}
+\definecolor{compicyan}{HTML}{007F8B}
+\definecolor{softblue}{HTML}{EAF3FA}
+\definecolor{softgray}{HTML}{F3F5F7}
+\definecolor{darkgray}{HTML}{343A40}
+\definecolor{okgreen}{HTML}{19733B}
+\definecolor{errorred}{HTML}{A6232D}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=uvgblue,
+  urlcolor=compicyan,
+  citecolor=compipurple,
+  pdftitle={Laboratorio 01 -- Analizador léxico y sintáctico de Compiscript},
+  pdfauthor={DragonsSlayers 2.0},
+  pdfsubject={Construcción de Compiladores CC-3032}
+}
+
+\newcommand{\proyecto}{Analizador de Compiscript}
+\newcommand{\archivo}[1]{\texttt{#1}}
+\newcommand{\regla}[1]{\textsf{#1}}
+\newcommand{\ANTLR}{ANTLR 4}
+\newcommand{\cps}{\texttt{.cps}}
+\newcommand{\separador}{\par\noindent\color{uvgblue}\rule{\textwidth}{0.6pt}\color{black}\par}
+
+% Cajas simples y portables, sin paquetes externos.
+\newenvironment{notatecnica}
+  {\begin{center}\begin{minipage}{0.92\textwidth}\color{darkgray}\hrule\vspace{0.5em}\textbf{Nota técnica.} }
+  {\vspace{0.5em}\hrule\end{minipage}\end{center}}
+
+\begin{document}
+\hypersetup{pageanchor=false}
+
+% ----------------------------------------------------------------
+% Portada
+% ----------------------------------------------------------------
+\begin{titlepage}
+  \centering
+  \vspace*{1.0cm}
+  {\Large\bfseries Universidad del Valle de Guatemala\par}
+  \vspace{0.35cm}
+  {\large Licenciatura en Ingeniería en Ciencias de la Computación\par}
+  \vspace{0.2cm}
+  {\large Construcción de Compiladores -- CC-3032, sección 10\par}
+
+  \vfill
+
+  \color{uvgblue}\rule{0.88\textwidth}{1.2pt}\color{black}
+  \vspace{0.8cm}
+
+  {\Huge\bfseries Laboratorio 01\par}
+  \vspace{0.35cm}
+  {\LARGE Uso de generadores de analizadores léxicos y sintácticos\par}
+  \vspace{0.7cm}
+  {\Huge\color{compipurple}\bfseries \proyecto\par}
+  \vspace{0.3cm}
+  {\Large Documentación teórica y práctica\par}
+
+  \vspace{0.8cm}
+  \color{uvgblue}\rule{0.88\textwidth}{1.2pt}\color{black}
+
+  \vfill
+
+  \begin{tabular}{>{\bfseries}rl}
+    Catedrático: & Ingeniero Carlos Valdez \\
+    Grupo: & DragonsSlayers 2.0 \\
+    Integrantes: & Pablo Daniel Barillas Moreno -- 22193 \\
+                 & Hugo Daniel Barillas Ajín -- 23556 \\
+                 & Ernesto Ascencio -- 23009 \\
+  \end{tabular}
+
+  \vfill
+  {\large Guatemala, 2026\par}
+\end{titlepage}
+
+\hypersetup{pageanchor=true}
+\pagenumbering{roman}
+
+\chapter*{Resumen}
+\addcontentsline{toc}{chapter}{Resumen}
+
+Este documento presenta la fundamentación, diseño, implementación y validación del
+Laboratorio 01 de Construcción de Compiladores. El producto desarrollado es una
+herramienta que analiza archivos de Compiscript con extensión \cps. La solución
+utiliza una gramática combinada de \ANTLR{} y el generador \archivo{antlr4ts-cli}
+para producir un lexer y un parser TypeScript reales. El mismo núcleo se consume
+desde una interfaz web construida con React y Vite, una aplicación de consola y una
+aplicación de escritorio empaquetada con Electron.
+
+La herramienta fuerza la tokenización completa, conserva los tokens reconocibles
+después de errores léxicos, ejecuta el parser desde la regla \regla{program} y aplica
+\archivo{DefaultErrorStrategy} para recuperarse de errores sintácticos. Los
+diagnósticos se normalizan al español e incluyen fase, línea, columna y símbolo
+relacionado. También se agrupan caracteres inválidos contiguos, se eliminan
+duplicados, se filtran cascadas derivadas y se limita la salida a 100 diagnósticos
+por fase sin detener el procesamiento.
+
+El resultado incluye tabla de tokens, errores separados por fase, resumen de
+aceptación y árbol de parseo textual y visual. La suite automatizada contiene 24
+pruebas que cubren construcciones válidas, recuperación ante múltiples errores,
+cadenas incorrectas, sincronización de ejemplos, límites de diagnósticos y los ocho
+casos de complejidad baja y media definidos por la rúbrica. El alcance se limita
+deliberadamente a análisis léxico y sintáctico: no hay análisis semántico,
+interpretación ni generación de código.
+
+\textbf{Palabras clave:} compiladores, análisis léxico, análisis sintáctico, ANTLR,
+Compiscript, TypeScript, recuperación de errores.
+
+\tableofcontents
+\listoffigures
+\listoftables
+\clearpage
+\pagenumbering{arabic}
+
+% ================================================================
+\chapter{Introducción}
+% ================================================================
+
+Un compilador o intérprete necesita transformar texto plano en una representación
+estructurada antes de poder comprobar significados o ejecutar instrucciones. Las dos
+primeras etapas de esta transformación son el análisis léxico y el análisis
+sintáctico. El primero agrupa caracteres en unidades llamadas \emph{tokens}; el
+segundo determina si la secuencia de tokens puede derivarse de una gramática formal.
+
+El laboratorio estudia estas etapas mediante una herramienta generadora. En lugar de
+programar manualmente una máquina de estados y un parser, el lenguaje se describe en
+un archivo de gramática: \archivo{Compiscript.g4}. ANTLR genera las clases que
+reconocen la entrada y la aplicación se ocupa de coordinarlas, recolectar resultados,
+mejorar los mensajes y presentarlos de forma útil.
+
+Compiscript es un lenguaje educativo inspirado en TypeScript. Incluye declaraciones,
+tipos básicos, arreglos, expresiones con precedencia, funciones, clases y estructuras
+de control. La aplicación permite cargar código propio o usar tres casos demostrativos
+integrados. Adicionalmente, \path{examples/rubric} aporta ocho entradas reproducibles
+que cubren los cuatro escenarios de complejidad baja y los cuatro de complejidad
+media solicitados en la evaluación.
+
+\section{Objetivo general}
+
+Diseñar e implementar un analizador léxico y sintáctico para archivos Compiscript
+mediante un generador de analizadores, con una interfaz que muestre tokens,
+diagnósticos comprensibles y el árbol de parseo sin detenerse en el primer error
+recuperable.
+
+\vspace{8cm}
+
+\section{Objetivos específicos}
+
+\begin{itemize}
+  \item Definir la sintaxis concreta de Compiscript en una gramática ANTLR.
+  \item Generar e integrar un lexer y un parser TypeScript a partir de esa gramática.
+  \item Mostrar tokens con tipo, lexema, posición y canal.
+  \item Distinguir errores léxicos de errores sintácticos y traducir los mensajes
+        técnicos más comunes a español.
+  \item Continuar el análisis ante entradas incorrectas y controlar las cascadas de
+        diagnósticos.
+  \item Visualizar y exportar los resultados desde una interfaz gráfica.
+  \item Ofrecer ejecución alternativa mediante CLI y empaquetado de escritorio.
+  \item Verificar el comportamiento mediante pruebas automatizadas y casos \cps.
+\end{itemize}
+
+\section{Alcance y exclusiones}
+
+El proyecto reconoce la estructura léxica y sintáctica del lenguaje. Un archivo se
+considera aceptado cuando las listas de errores léxicos y sintácticos están vacías.
+El árbol producido demuestra qué estructura reconoció el parser.
+
+No se construye una tabla de símbolos, no se resuelven nombres, no se comprueban
+tipos, no se evalúan expresiones y no se genera código intermedio, máquina virtual o
+ensamblador. Por ejemplo, una asignación entre tipos incompatibles puede ser
+sintácticamente válida aunque sería rechazada en una futura fase semántica.
+
+% ================================================================
+\chapter{Fundamentos teóricos}
+% ================================================================
+
+\section{De caracteres a estructura}
+
+El frente de un compilador puede representarse como una composición de funciones:
+
+\[
+  \text{caracteres}\xrightarrow{\text{lexer}}\text{tokens}
+  \xrightarrow{\text{parser}}\text{árbol sintáctico}.
+\]
+
+Esta separación reduce complejidad. El parser no necesita distinguir cada carácter
+de una palabra reservada; recibe un token como \archivo{IF} o \archivo{Identifier}.
+El lexer, a su vez, no decide si un \archivo{IF} aparece en una posición gramatical
+válida.
+
+\section{Análisis léxico}
+
+Un \textbf{lexema} es el fragmento concreto de entrada, por ejemplo
+\archivo{contador}; un \textbf{token} es su categoría, en este caso
+\archivo{Identifier}. Un patrón describe el conjunto de lexemas de una categoría.
+En Compiscript, un identificador comienza con letra o guion bajo y continúa con
+letras, dígitos o guiones bajos.
+
+El lexer generado aplica prioridades y la política de coincidencia más larga. Por
+ello, las palabras reservadas se declaran antes de \archivo{Identifier}, y los
+operadores de dos caracteres se declaran antes que sus versiones de uno. Así,
+\archivo{<=} se reconoce como una unidad y no como \archivo{<} seguida de
+\archivo{=}.
+
+Los espacios, saltos de línea y comentarios se envían a reglas con acción
+\archivo{skip}; no llegan al parser. Sin embargo, el lexer actualiza línea y columna
+para que los tokens y errores siguientes mantengan una ubicación correcta.
+
+\section{Gramáticas libres de contexto}
+
+Una gramática libre de contexto se describe como una cuádrupla
+$G=(V,\Sigma,P,S)$, donde $V$ es el conjunto de no terminales, $\Sigma$ el de
+terminales, $P$ las producciones y $S$ el símbolo inicial. En el proyecto,
+\regla{program} es el símbolo inicial y exige cero o más sentencias seguidas de EOF:
+
+\begin{center}
+\fbox{\texttt{program : statement* EOF ;}}
+\end{center}
+
+Los terminales son los tokens producidos por el lexer; los no terminales son reglas
+como \regla{statement}, \regla{functionDeclaration} o \regla{expression}. El parser
+construye un árbol cuyos nodos internos corresponden a reglas y cuyas hojas
+corresponden a tokens.
+
+\section{Precedencia y asociatividad}
+
+Una gramática de expresiones debe evitar que \archivo{1 + 2 * 3} se interprete como
+\archivo{(1 + 2) * 3}. Compiscript separa cada nivel de precedencia en una regla.
+Cuanto más cerca está una regla de \regla{primaryExpression}, mayor es su prioridad.
+
+\begin{table}[H]
+\centering
+\caption{Precedencia de expresiones, de menor a mayor.}
+\label{tab:precedencia}
+\begin{tabularx}{\textwidth}{>{\bfseries}c l X}
+\toprule
+Nivel & Regla & Operadores o forma \\
+\midrule
+1 & Asignación & \archivo{=} \\
+2 & Condicional & \archivo{? :} \\
+3 & OR lógico & \archivo{||} \\
+4 & AND lógico & \archivo{\&\&} \\
+5 & Igualdad & \archivo{==}, \archivo{!=} \\
+6 & Relacional & \archivo{<}, \archivo{<=}, \archivo{>}, \archivo{>=} \\
+7 & Aditiva & \archivo{+}, \archivo{-} \\
+8 & Multiplicativa & \archivo{*}, \archivo{/}, \archivo{\%} \\
+9 & Unaria & \archivo{!}, \archivo{-}, \archivo{+} \\
+10 & Primaria & literales, identificadores, llamadas, índices y propiedades \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\vspace{10cm}
+
+\section{ANTLR 4 y Adaptive LL(*)}
+
+ANTLR recibe una gramática declarativa y genera reconocedores para un lenguaje
+objetivo. En este laboratorio, \archivo{antlr4ts-cli} genera TypeScript. El parser de
+ANTLR 4 utiliza predicción \textbf{Adaptive LL(*)}: analiza la entrada de izquierda a
+derecha, construye una derivación izquierda y adapta su predicción con autómatas
+internos. Puede examinar la cantidad de contexto necesaria para distinguir
+alternativas.
+
+No debe confundirse con un parser SLR. La implementación no posee tablas
+\archivo{ACTION/GOTO} ni registra operaciones \emph{shift/reduce}. Su evidencia de
+ejecución es la invocación a las clases generadas y la construcción del árbol ANTLR.
+
+\section{Recuperación de errores}
+
+Detenerse en el primer error dificulta corregir un archivo grande. Una estrategia de
+recuperación intenta alcanzar un punto estable y continuar. La estrategia
+\archivo{DefaultErrorStrategy} de ANTLR puede:
+
+\begin{itemize}
+  \item insertar conceptualmente un token faltante;
+  \item eliminar un token sobrante;
+  \item sincronizar el flujo con tokens esperados por reglas posteriores.
+\end{itemize}
+
+La recuperación no convierte una entrada inválida en válida: permite construir un
+árbol parcial y recolectar más diagnósticos. Es necesario controlar cascadas, porque
+un error inicial puede provocar mensajes secundarios que no representan problemas
+independientes.
+
+\subsection{Propagación y cascadas de errores}
+
+Cuando el lexer descarta un carácter no reconocido, el parser recibe un flujo de
+tokens distinto del texto original. Esa ausencia puede provocar un diagnóstico
+sintáctico secundario aunque el usuario haya cometido un solo error léxico. De forma
+similar, durante la recuperación sintáctica, la inserción o eliminación conceptual de
+un token puede modificar la interpretación de construcciones posteriores. A este
+fenómeno se le denomina \emph{propagación} o \emph{cascada de errores}.
+
+La implementación no crea errores artificiales: conserva los diagnósticos producidos
+por ANTLR y aplica medidas para presentar únicamente información útil. Agrupa
+caracteres inválidos contiguos, elimina duplicados exactos, evita volver a reportar
+símbolos ya cubiertos por una cadena inválida y filtra errores del parser ubicados
+inmediatamente después de un fragmento reportado por el lexer. Las cascadas
+sintácticas lejanas no pueden clasificarse causalmente con certeza, por lo que se
+conservan hasta un máximo de cien diagnósticos por fase.
+
+% ================================================================
+\chapter{Especificación de Compiscript}
+% ================================================================
+
+\section{Unidades léxicas}
+
+\begin{table}[H]
+\centering
+\caption{Familias principales de tokens.}
+\label{tab:tokens}
+\begin{tabularx}{\textwidth}{>{\bfseries}l X}
+\toprule
+Familia & Elementos representativos \\
+\midrule
+Declaración & \archivo{let}, \archivo{var}, \archivo{const}, \archivo{function}, \archivo{class} \\
+Control & \archivo{if}, \archivo{else}, \archivo{while}, \archivo{for}, \archivo{foreach}, \archivo{switch}, \archivo{try}, \archivo{catch} \\
+Tipos & \archivo{integer}, \archivo{string}, \archivo{boolean} e identificadores de clase \\
+Literales & enteros, cadenas, \archivo{true}, \archivo{false}, \archivo{null} y arreglos \\
+Operadores & aritméticos, relacionales, igualdad, lógicos, asignación y ternario \\
+Delimitadores & paréntesis, llaves, corchetes, coma, punto, dos puntos y punto y coma \\
+Ignorados & espacios, tabulaciones, saltos de línea y comentarios de línea o bloque \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Las cadenas admiten los escapes \archivo{\textbackslash"},
+\archivo{\textbackslash\textbackslash}, \archivo{\textbackslash n},
+\archivo{\textbackslash r} y \archivo{\textbackslash t}. Una comilla inicial sin
+cierre en la misma línea o una secuencia no permitida produce un diagnóstico léxico
+especializado.
+
+\section{Declaraciones y tipos}
+
+\archivo{let} y \archivo{var} permiten anotación de tipo e inicializador opcionales.
+\archivo{const} requiere inicializador. Los tipos básicos son \archivo{integer},
+\archivo{string} y \archivo{boolean}; un identificador puede representar una clase.
+Cada sufijo \archivo{[]} agrega una dimensión de arreglo.
+
+\begin{verbatim}
+let contador: integer = 0;
+var mensaje: string;
+const ACTIVO: boolean = true;
+let matriz: integer[][] = [[1, 2], [3, 4]];
+\end{verbatim}
+
+\section{Funciones y clases}
+
+Una función puede declarar parámetros tipados y un tipo de retorno. La gramática
+acepta recursión y funciones anidadas porque una declaración de función es una
+sentencia válida dentro de un bloque. Las clases admiten miembros, herencia mediante
+dos puntos, acceso con \archivo{this} e instanciación con \archivo{new}.
+
+\begin{verbatim}
+function factorial(n: integer): integer {
+  if (n <= 1) return 1;
+  return n * factorial(n - 1);
+}
+
+class Perro : Animal {
+  function hablar(): string {
+    return this.nombre + " ladra.";
+  }
+}
+\end{verbatim}
+
+\section{Control de flujo}
+
+El lenguaje cubre bloques y ciclos \archivo{while}, \archivo{do-while},
+\archivo{for} y \archivo{foreach}. La selección emplea \archivo{if/else} o
+\archivo{switch}, \archivo{case} y \archivo{default}; el manejo sintáctico usa
+\archivo{try/catch}. También existen \archivo{break}, \archivo{continue} y
+\archivo{return}. La palabra
+``sintáctico'' es importante: el parser acepta la forma, pero no verifica, por
+ejemplo, que \archivo{break} aparezca semánticamente dentro de un ciclo.
+
+\section{Accesos y expresiones}
+
+La regla del lado izquierdo parte de un átomo primario y admite una sucesión de
+sufijos: llamada \archivo{(...)}, índice \archivo{[...]}, o propiedad
+\archivo{.identificador}. Esto permite reconocer construcciones como
+\archivo{obj.metodo(lista[0]).propiedad}. El agrupamiento con paréntesis y los niveles
+de la Tabla~\ref{tab:precedencia} preservan la estructura esperada.
+
+% ================================================================
+\chapter{Arquitectura y diseño}
+% ================================================================
+
+\section{Arquitectura general}
+
+La lógica del analizador se concentra en \archivo{src/lib}; no está duplicada entre
+las interfaces. React y la CLI llaman a \archivo{analyzeInput}. Electron aloja la
+aplicación web ya compilada, por lo que también reutiliza el mismo núcleo.
+
+\begin{figure}[H]
+\centering
+\setlength{\unitlength}{1mm}
+\begin{picture}(150,70)
+  \put(2,50){\framebox(34,12){\shortstack{Archivo \.cps}}}
+  \put(43,50){\framebox(42,12){\shortstack{Núcleo ANTLR\\\archivo{src/lib}}}}
+  \put(92,50){\framebox(55,12){\shortstack{Resultado normalizado\\\archivo{AnalyzeResult}}}}
+  \put(36,56){\vector(1,0){7}}
+  \put(85,56){\vector(1,0){7}}
+
+  \put(4,10){\framebox(37,15){\shortstack{React + Vite\\interfaz web}}}
+  \put(56,10){\framebox(37,15){\shortstack{CLI TypeScript\\terminal}}}
+  \put(108,10){\framebox(37,15){\shortstack{Electron\\Windows x64}}}
+
+  \put(111,50){\vector(-3,-2){60}}
+  \put(119,50){\vector(-1,-1){25}}
+  \put(128,50){\vector(1,-3){8}}
+\end{picture}
+\caption{Arquitectura de reutilización del núcleo de análisis.}
+\label{fig:arquitectura}
+\end{figure}
+
+\vspace{8cm}
+
+\section{Generación e integración}
+
+La gramática es la fuente de verdad del lenguaje. El comando
+\archivo{npm run generate} ejecuta \archivo{antlr4ts} con opciones de visitor y
+listener, y escribe los artefactos en \archivo{src/generated}. Estos archivos se
+incluyen en el repositorio para que Java sea necesario únicamente al regenerarlos.
+
+\begin{figure}[H]
+\centering
+\setlength{\unitlength}{1mm}
+\begin{picture}(150,42)
+  \put(1,16){\framebox(36,13){\shortstack{\archivo{Compiscript.g4}\\fuente}}}
+  \put(43,16){\framebox(30,13){\shortstack{\archivo{antlr4ts-cli}\\Java}}}
+  \put(79,16){\framebox(42,13){\shortstack{Lexer, parser,\\listener y visitor}}}
+  \put(127,16){\framebox(22,13){\shortstack{TypeScript\\compilado}}}
+  \put(37,22){\vector(1,0){6}}
+  \put(73,22){\vector(1,0){6}}
+  \put(121,22){\vector(1,0){6}}
+\end{picture}
+\caption{Flujo de generación de analizadores.}
+\label{fig:generacion}
+\end{figure}
+
+Los archivos generados no deben modificarse manualmente: una regeneración los
+sobrescribe. Para cambiar el lenguaje se edita primero la gramática, luego se genera
+de nuevo y finalmente se ejecutan las verificaciones.
+
+\section{Flujo en tiempo de ejecución}
+
+\begin{figure}[H]
+\centering
+\setlength{\unitlength}{1mm}
+\begin{picture}(150,104)
+  \put(45,90){\framebox(60,10){Texto Compiscript}}
+  \put(45,72){\framebox(60,10){\archivo{ANTLRInputStream}}}
+  \put(45,54){\framebox(60,10){\archivo{CompiscriptLexer}}}
+  \put(45,36){\framebox(60,10){\archivo{CommonTokenStream.fill()}}}
+  \put(3,13){\framebox(51,12){\shortstack{Modo lexer\\tokens + errores léxicos}}}
+  \put(96,13){\framebox(51,12){\shortstack{Modo parser: \archivo{program()}\\errores + árbol}}}
+  \put(75,90){\vector(0,-1){8}}
+  \put(75,72){\vector(0,-1){8}}
+  \put(75,54){\vector(0,-1){8}}
+  \put(60,36){\vector(-2,-1){25}}
+  \put(90,36){\vector(2,-1){25}}
+  \put(109,28){\makebox(33,5){\scriptsize \archivo{seek(0)}}}
+\end{picture}
+\caption{Pipeline de análisis y bifurcación por modo.}
+\label{fig:pipeline}
+\end{figure}
+
+Los pasos concretos son:
+
+\begin{enumerate}
+  \item Crear un \archivo{ANTLRInputStream} a partir del texto.
+  \item Instanciar \archivo{CompiscriptLexer} y sustituir sus listeners por uno
+        recolector.
+  \item Crear \archivo{CommonTokenStream} y llamar \archivo{fill()} para forzar el
+        recorrido completo.
+  \item Convertir cada token, excepto EOF, a \archivo{TokenInfo}.
+  \item Si el modo es léxico, terminar sin crear un parser.
+  \item En modo completo, rebobinar con \archivo{seek(0)} y crear el parser.
+  \item Configurar \archivo{DefaultErrorStrategy} e invocar \regla{program}.
+  \item Convertir el árbol ANTLR a texto Lisp, texto indentado y nodos visuales.
+  \item Filtrar diagnósticos derivados y calcular la aceptación y el resumen.
+\end{enumerate}
+
+\section{Modelo de resultado}
+
+\archivo{AnalyzeResult} actúa como contrato entre el núcleo y sus consumidores.
+Contiene el lenguaje, modo, aceptación, tokens, errores por fase, tres formas del
+árbol, explicación y conteos. Cada token conserva índice, ID numérico, nombre
+simbólico, texto, línea, columna base 1 y canal. Cada error conserva origen, posición,
+mensaje, símbolo opcional y severidad.
+
+Esta estructura desacopla el motor de la presentación. La UI puede renderizar tablas
+y árboles, la CLI puede imprimir texto y las funciones de descarga pueden serializar
+JSON o CSV sin volver a ejecutar el parser.
+
+% ================================================================
+\chapter{Implementación práctica}
+% ================================================================
+
+\section{Organización del repositorio}
+
+\begin{verbatim}
+.
+|-- docs/                 Documentación y matriz de cumplimiento
+|-- electron/main.cjs     Proceso principal de Electron
+|-- examples/
+|   |-- compiscript/      Casos integrados de la interfaz
+|   |-- rubric/low/       Cuatro casos de complejidad baja
+|   |-- rubric/medium/    Cuatro casos de complejidad media
+|   `-- error_distribution/
+|       |-- lexer_errors.cps
+|       |-- parser_errors.cps
+|       `-- lexer_parser_alternating_errors.cps
+|-- src/
+|   |-- __tests__/        Pruebas Vitest
+|   |-- cli/run.ts        Entrada de consola
+|   |-- generated/        Código producido por ANTLR
+|   |-- grammars/         Compiscript.g4
+|   |-- lib/              Análisis, errores, árboles y descargas
+|   |-- ui/               App y componentes React
+|   |-- main.tsx          Punto de entrada web
+|   `-- styles.css        Diseño adaptable
+|-- package.json          Scripts y metadatos de empaquetado
+|-- tsconfig.json         TypeScript estricto
+`-- vite.config.ts        Vite, React y polyfills
+\end{verbatim}
+
+\vspace{5cm}
+
+\section{Gramática combinada}
+
+\archivo{Compiscript.g4} contiene reglas sintácticas y léxicas. La regla superior
+admite una lista de sentencias y exige llegar al final del archivo. Una versión
+reducida de la estructura es:
+
+\begin{verbatim}
+grammar Compiscript;
+
+program
+  : statement* EOF
+  ;
+
+statement
+  : variableDeclaration
+  | constantDeclaration
+  | functionDeclaration
+  | classDeclaration
+  | printStatement
+  | block
+  | ifStatement
+  | whileStatement
+  | doWhileStatement
+  | forStatement
+  | foreachStatement
+  | tryCatchStatement
+  | switchStatement
+  | breakStatement
+  | continueStatement
+  | returnStatement
+  | expressionStatement
+  ;
+\end{verbatim}
+
+La expresión se divide por niveles en vez de usar un parser manual. La asignación
+permite un lado izquierdo seguido de \archivo{=} y otra asignación, o delega a la
+expresión condicional. La recursión a la derecha modela la asociatividad esperada de
+la asignación.
+
+\vspace{5cm}
+
+\section{Integración en \archivo{analyze.ts}}
+
+La función pública acepta el texto y un modo opcional:
+
+\begin{verbatim}
+export function analyzeInput(
+  input: string,
+  mode: AnalyzerMode = "parser"
+): AnalyzeResult
+\end{verbatim}
+
+El uso de \archivo{tokenStream.fill()} es una decisión central: fuerza al lexer a
+recorrer toda la entrada antes del parseo y hace posible capturar múltiples errores
+léxicos. Después se recolecta la información de los tokens, se descarta EOF y se
+obtiene cada nombre desde el vocabulario generado. En modo completo se ejecuta:
+
+\begin{verbatim}
+tokenStream.seek(0);
+const parser = new CompiscriptParser(tokenStream);
+parser.errorHandler = new DefaultErrorStrategy();
+parser.buildParseTree = true;
+const tree = parser.program();
+\end{verbatim}
+
+La decisión de aceptación es explícita:
+
+\[
+  accepted \iff |E_{lex}|=0 \land |E_{syn}|=0.
+\]
+
+Por tanto, producir tokens o un árbol parcial no implica que el archivo haya sido
+aceptado.
+
+\vspace{10cm}
+
+\section{Recolección y normalización de errores}
+
+\archivo{CollectingErrorListener} implementa \archivo{ANTLRErrorListener} tanto para
+el lexer como para el parser. Convierte la columna interna base 0 a base 1 y genera un
+objeto uniforme. Los mensajes comunes se transforman como muestra la tabla.
+
+\begin{table}[H]
+\centering
+\caption{Normalización de mensajes de ANTLR.}
+\label{tab:errores}
+\begin{tabularx}{\textwidth}{>{\ttfamily}l X}
+\toprule
+Patrón interno & Presentación al usuario \\
+\midrule
+token recognition error & Carácter o lexema no reconocido \\
+missing X at Y & Falta X antes de Y \\
+extraneous input & Se encontró un token, pero se esperaba otro \\
+mismatched input & El token no coincide con el conjunto esperado \\
+no viable alternative & No se reconoció una construcción válida cercana \\
+failed predicate & La construcción no cumple una regla de la gramática \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+El tratamiento adicional incluye:
+
+\begin{itemize}
+  \item \textbf{Cadenas:} si una comilla no tiene cierre no escapado en la línea, se
+        reporta una cadena sin cerrar; si sí existe cierre, el fragmento completo se
+        reporta como cadena inválida por sus escapes.
+  \item \textbf{Agrupación:} errores de reconocimiento contiguos en la misma línea se
+        unen; \archivo{@@@} produce un diagnóstico y no tres.
+  \item \textbf{Deduplicación:} no se agrega dos veces la misma combinación de línea,
+        columna, símbolo y mensaje.
+  \item \textbf{Cobertura:} no se reporta de nuevo un carácter que ya está dentro del
+        fragmento de una cadena inválida.
+  \item \textbf{Filtrado cruzado:} se omiten errores sintácticos inmediatamente
+        cercanos a un fragmento ya descartado por el lexer.
+  \item \textbf{Límite:} el centésimo elemento se convierte en un aviso de límite;
+        el análisis continúa aunque se omitan mensajes posteriores.
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\setlength{\unitlength}{1mm}
+\begin{picture}(150,67)
+  \put(2,48){\framebox(34,12){Error ANTLR}}
+  \put(43,48){\framebox(44,12){\shortstack{Traducir y ubicar\\línea/columna}}}
+  \put(94,48){\framebox(53,12){\shortstack{Especializar cadenas\\y fragmentos}}}
+  \put(36,54){\vector(1,0){7}}
+  \put(87,54){\vector(1,0){7}}
+  \put(25,14){\framebox(44,12){\shortstack{Deduplicar y\\agrupar}}}
+  \put(81,14){\framebox(44,12){\shortstack{Filtrar cascadas\\y limitar salida}}}
+  \put(111,48){\vector(-2,-1){54}}
+  \put(69,20){\vector(1,0){12}}
+  \put(125,20){\vector(1,0){15}}
+  \put(132,14){\framebox(17,12){Mostrar}}
+\end{picture}
+\caption{Proceso de normalización de diagnósticos.}
+\label{fig:errores}
+\end{figure}
+
+\section{Representación del árbol}
+
+El árbol se conserva de tres maneras:
+
+\begin{enumerate}
+  \item \archivo{parseTreeText}: salida Lisp de \archivo{toStringTree};
+  \item \archivo{formattedParseTree}: recorrido indentado para descarga y copia;
+  \item \archivo{parseTreeNodes}: nodos recursivos para la vista interactiva.
+\end{enumerate}
+
+La conversión visual recorre directamente \archivo{ParseTree}. Si el nodo es un
+\archivo{ParserRuleContext}, usa el nombre de regla; si es terminal, usa su texto.
+Esta ruta evita ambigüedades que aparecerían al intentar volver a interpretar la
+cadena Lisp cuando un token literal es un paréntesis.
+
+\begin{figure}[H]
+\centering
+\setlength{\unitlength}{1mm}
+\begin{picture}(130,60)
+  \put(50,48){\framebox(30,9){program}}
+  \put(13,27){\framebox(34,9){statement}}
+  \put(83,27){\framebox(34,9){EOF}}
+  \put(65,48){\line(-2,-1){31}}
+  \put(65,48){\line(2,-1){35}}
+  \put(2,7){\framebox(26,9){LET}}
+  \put(31,7){\framebox(29,9){Identifier}}
+  \put(63,7){\framebox(22,9){SEMI}}
+  \put(30,27){\line(-1,-1){15}}
+  \put(30,27){\line(1,-1){15}}
+  \put(30,27){\line(3,-1){44}}
+\end{picture}
+\caption{Ejemplo simplificado de árbol de parseo.}
+\label{fig:arbol}
+\end{figure}
+
+\section{Interfaz web}
+
+\archivo{App.tsx} coordina estado, caso seleccionado, texto de entrada, pestaña,
+resultado y errores inesperados. La interfaz posee tres vistas:
+
+\begin{itemize}
+  \item \textbf{Análisis completo:} lexer, parser, diagnósticos y árbol;
+  \item \textbf{Solo lexer:} tokens y errores léxicos sin instanciar el parser;
+  \item \textbf{Documentación:} cobertura, comandos y alcance.
+\end{itemize}
+
+\archivo{InputEditor} restringe el selector a \cps, valida nuevamente la extensión,
+lee el archivo como texto y permite editarlo. Los paneles presentan el estado,
+conteos, tabla de tokens, grupos de errores y árbol colapsable. La hoja de estilos
+utiliza rejillas y puntos de quiebre en 1100, 700 y 500 píxeles; los bloques de código,
+tablas y árbol poseen desplazamiento o ajuste de palabra para evitar desbordamientos.
+
+Las descargas disponibles son gramática \archivo{.g4}, entrada \cps, tokens CSV,
+tokens JSON, árbol TXT en modo parser y resultado JSON. Se construyen con
+\archivo{Blob} y una URL temporal del navegador.
+
+\section{Compatibilidad con navegador}
+
+\archivo{antlr4ts} depende indirectamente de \archivo{assert}, \archivo{util} y la
+variable global \archivo{process}. Vite configura alias para los dos módulos y
+\archivo{browserProcess.ts} instala el polyfill global antes de cargar el analizador.
+Esta inicialización evita una pantalla en blanco por referencias de Node ausentes en
+el navegador.
+
+\section{Interfaz de consola}
+
+\archivo{src/cli/run.ts} valida que exista un argumento, que el archivo tenga
+extensión \cps y que esté disponible. Lee UTF-8, llama al mismo
+\archivo{analyzeInput}, imprime conteos y errores con color, e informa si el análisis
+continuó después de errores recuperables.
+
+\begin{table}[H]
+\centering
+\caption{Códigos de salida de la CLI.}
+\label{tab:exit}
+\begin{tabular}{c l}
+\toprule
+Código & Significado \\
+\midrule
+0 & Archivo aceptado sin errores léxicos ni sintácticos \\
+1 & Archivo rechazado o argumentos de usuario inválidos \\
+2 & Excepción inesperada durante el análisis \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Aplicación de escritorio}
+
+Electron crea una ventana de $1440\times900$ píxeles, con mínimos de
+$1000\times700$, y carga \archivo{dist/index.html}. La configuración de seguridad
+desactiva la integración de Node, activa el aislamiento de contexto y mantiene el
+\emph{sandbox}. El menú nativo se oculta.
+
+\archivo{electron-builder} produce Windows x64 en dos modalidades:
+
+\begin{center}
+\archivo{Compiscript-Portable-<version>.exe}\qquad
+\archivo{Compiscript-Setup-<version>.exe}
+\end{center}
+
+La aplicación final no requiere Node.js, npm ni Java en la computadora del usuario.
+Java solo se requiere al regenerar la gramática durante el desarrollo.
+
+% ================================================================
+\chapter{Pruebas y validación}
+% ================================================================
+
+\section{Estrategia de pruebas}
+
+La suite utiliza Vitest y contiene 24 casos: 13 instancias en el archivo principal
+del analizador, 3 comprobaciones parametrizadas de sincronización entre los ejemplos
+de disco y los textos mostrados en la interfaz, y 8 comprobaciones parametrizadas de
+la matriz oficial de la rúbrica. Las pruebas no se limitan a verificar un valor
+booleano; también inspeccionan tokens posteriores, mensajes, conteos, estructuras
+exigidas y árbol.
+
+\begingroup
+\small
+\renewcommand{\arraystretch}{1.1}
+\begin{longtable}{p{0.29\textwidth} p{0.64\textwidth}}
+\caption{Cobertura automatizada del proyecto.}\label{tab:pruebas}\\
+\toprule
+Área & Evidencia verificada \\
+\midrule
+\endfirsthead
+\toprule
+Área & Evidencia verificada \\
+\midrule
+\endhead
+Programa integral & Aceptación, cero errores, tokens de clases y foreach, y regla de función en el árbol. \\
+Cobertura válida & Tipos, matrices, expresiones, ciclos, switch, try/catch, clases, herencia, new, closures y recursión. \\
+Errores léxicos & Dos caracteres inválidos, continuidad hasta tokens posteriores, mensajes normalizados y ausencia de parser en modo lexer. \\
+Agrupación & \archivo{@@@} genera un solo error léxico y no una cascada sintáctica inmediata. \\
+Cadenas & Diagnóstico específico para cadena sin cerrar y para escape inválido. \\
+Límite léxico & 120 fragmentos producen 100 entradas visibles y todavía se reconoce el identificador final. \\
+Recuperación sintáctica & Se reporta más de un error, no se exponen frases internas en inglés y se conserva el árbol. \\
+Límite sintáctico & Se limita la lista y el árbol alcanza EOF. \\
+Sincronización & Los tres archivos \cps coinciden con los casos embebidos en la interfaz. \\
+Matriz de la rúbrica & Ocho archivos comprueban complejidad baja/media y los mínimos de errores por fase. \\
+\bottomrule
+\end{longtable}
+\endgroup
+
+\section{Casos demostrativos}
+
+El caso válido combina constantes, recursión, clases, herencia, arreglos,
+\archivo{foreach} y \archivo{try/catch}. Debe producir cero errores y un árbol desde
+\regla{program} hasta EOF.
+
+El caso léxico contiene dos símbolos no definidos y una sentencia posterior:
+
+\begin{verbatim}
+let primero: integer = 10 @ 2;
+let segundo: integer = 20 # 4;
+print(primero);
+\end{verbatim}
+
+La prueba espera dos errores y confirma que el token \archivo{print} todavía existe,
+lo cual demuestra continuidad del escaneo.
+
+El caso sintáctico omite puntos y coma y un paréntesis de cierre:
+
+\begin{verbatim}
+let nombre: string = "Compiscript"
+const total: integer = 10
+
+if (total > 5 {
+  print(nombre)
+}
+\end{verbatim}
+
+El parser debe recuperar más de un error y conservar una representación del árbol.
+
+\section{Matriz de casos exigidos por la rúbrica}
+
+La carpeta \path{examples/rubric} transforma cada criterio de evaluación en una
+entrada independiente. Los cuatro casos bajos contienen variables de tipo
+\archivo{integer}, \archivo{string} y \archivo{boolean}; una constante; suma y
+multiplicación; un condicional; un ciclo \archivo{while}; y un \archivo{foreach}.
+Los cuatro casos medios conservan esos elementos y agregan un arreglo declarado y
+utilizado, dos clases, dos objetos instanciados, dos funciones declaradas y dos
+llamadas.
+
+\begin{table}[H]
+\centering
+\caption{Resultados verificados de la matriz de la rúbrica.}
+\label{tab:matriz-rubrica}
+\begin{tabularx}{\textwidth}{>{\ttfamily}X r r r r}
+\toprule
+\normalfont Caso & Tokens & Léxicos & Sintácticos & Salida \\
+\midrule
+low/valid.cps & 112 & 0 & 0 & 0 \\
+low/lexer\_errors.cps & 112 & 3 & 0 & 1 \\
+low/parser\_errors.cps & 109 & 0 & 3 & 1 \\
+low/lexer\_parser\_errors.cps & 110 & 2 & 2 & 1 \\
+medium/valid.cps & 263 & 0 & 0 & 0 \\
+medium/lexer\_errors.cps & 263 & 3 & 0 & 1 \\
+medium/parser\_errors.cps & 260 & 0 & 3 & 1 \\
+medium/lexer\_parser\_errors.cps & 261 & 2 & 2 & 1 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Los códigos de salida cero corresponden a aceptación sin errores. El código uno en
+los otros seis archivos confirma el rechazo intencional. Los casos exclusivamente
+léxicos no originan errores sintácticos derivados; los exclusivamente sintácticos no
+contienen símbolos fuera del vocabulario; y los mixtos alcanzan exactamente dos
+diagnósticos de cada fase. Todos presentan fase, línea, columna, símbolo o token y
+mensaje en español.
+
+La automatización en \archivo{rubric.examples.test.ts} lee los archivos reales,
+ejecuta \archivo{analyzeInput}, verifica los conteos y comprueba por patrones la
+presencia de cada construcción de complejidad. Así se evita que la documentación y
+la demostración se separen del comportamiento actual.
+
+\section{Pruebas de distribución y recuperación de errores}
+
+Además de los tres casos integrados en la interfaz, el directorio
+\path{examples/error_distribution} contiene entradas manuales destinadas a
+observar propagación, recuperación y control de cascadas. Estos archivos funcionan
+como evidencia reproducible complementaria a las 24 pruebas Vitest para la
+interfaz gráfica, la CLI y el video.
+
+\begin{table}[H]
+\centering
+\caption{Resultados verificados de los casos de distribución de errores.}
+\label{tab:distribucion-errores}
+\begin{tabularx}{\textwidth}{>{\ttfamily}X r r r r}
+\toprule
+\normalfont Archivo & Tokens & Léxicos & Sintácticos & Total \\
+\midrule
+lexer\_errors.cps & 39 & 3 & 0 & 3 \\
+parser\_errors.cps & 64 & 0 & 7 & 7 \\
+lexer\_parser\_alternating\_errors.cps & 72 & 4 & 4 & 8 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Caso exclusivamente léxico}
+
+\archivo{lexer\_errors.cps} contiene los símbolos inválidos \archivo{@},
+\archivo{\#} y \archivo{\$}. El fragmento \archivo{\#\#\#} se agrupa en un solo
+diagnóstico. El resultado final contiene tres errores léxicos, ningún error
+sintáctico derivado y tokens reconocidos después de cada fragmento incorrecto.
+
+\subsection{Caso exclusivamente sintáctico}
+
+\archivo{parser\_errors.cps} utiliza únicamente caracteres reconocibles, pero omite
+puntos y coma y un paréntesis de cierre en construcciones independientes. El lexer no
+reporta problemas y el parser produce siete diagnósticos en español, alcanza EOF y
+conserva un árbol parcial mediante \archivo{DefaultErrorStrategy}.
+
+\subsection{Caso léxico y sintáctico alternado}
+
+\archivo{lexer\_parser\_alternating\_errors.cps} intercala cuatro símbolos inválidos
+---\archivo{@}, \archivo{\#}, \archivo{\$} y un \archivo{\&} aislado--- con cuatro
+omisiones sintácticas deliberadas. El resultado contiene exactamente cuatro errores
+de cada fase. Los errores sintácticos inmediatos que podrían derivarse de los símbolos
+descartados no se duplican, y el análisis continúa hasta la sentencia final
+\archivo{print(e);}.
+
+Los tres casos pueden ejecutarse desde la raíz del proyecto:
+
+{\small
+\begin{verbatim}
+npm run cli -- examples/error_distribution/lexer_errors.cps
+npm run cli -- examples/error_distribution/parser_errors.cps
+npm run cli -- examples/error_distribution/lexer_parser_alternating_errors.cps
+\end{verbatim}
+}
+
+Todos terminan con código de salida 1 porque son archivos intencionalmente inválidos;
+ese código representa un rechazo esperado y no una excepción del analizador.
+
+\section{Comandos de verificación}
+
+La secuencia reproducible del proyecto es:
+
+\begin{verbatim}
+npm install
+npm run generate
+npm run check
+npm test
+npm run build
+\end{verbatim}
+
+\archivo{npm run check} ejecuta TypeScript sin emitir archivos. \archivo{npm test}
+ejecuta Vitest una vez y \archivo{npm run build} combina comprobación de tipos y
+construcción optimizada de Vite. Estas tres verificaciones cubren tipos, comportamiento
+y empaquetado web, respectivamente.
+
+% ================================================================
+\chapter{Instalación, ejecución y distribución}
+% ================================================================
+
+\section{Requisitos de desarrollo}
+
+\begin{itemize}
+  \item Node.js 20.19 o posterior, o 22.12 o posterior;
+  \item npm 9 o posterior;
+  \item Java/JRE 11 o posterior únicamente para regenerar los analizadores;
+  \item navegador moderno; Windows x64 para los ejecutables distribuidos.
+\end{itemize}
+
+\section{Ejecución web}
+
+En la raíz del repositorio:
+
+\begin{verbatim}
+npm install
+npm run generate
+npm run dev -- --force
+\end{verbatim}
+
+Luego se abre \url{http://localhost:3000}. En ejecuciones posteriores normalmente
+basta \archivo{npm run dev}. La opción \archivo{--force} resulta útil si Vite debe
+reconstruir su caché después de instalar o cambiar dependencias.
+
+\vspace{8cm}
+
+\section{Uso de la aplicación}
+
+\begin{enumerate}
+  \item Seleccionar \textbf{Análisis completo} o \textbf{Solo lexer}.
+  \item Elegir un caso incluido, escribir código o cargar un archivo \cps.
+  \item Presionar \textbf{Analizar con ANTLR}.
+  \item Revisar estado, tokens, ubicación de errores y, en modo completo, árbol.
+  \item Descargar la entrada o los resultados si se necesita evidencia externa.
+\end{enumerate}
+
+\section{Uso de la CLI}
+
+\begin{verbatim}
+npm run cli:valid
+npm run cli:error-lex
+npm run cli:error-syn
+npx tsx src/cli/run.ts ruta/al/programa.cps
+\end{verbatim}
+
+Los scripts de casos erróneos terminan intencionalmente con código 1; esto indica que
+la herramienta rechazó correctamente la entrada, no que el analizador falló.
+
+\section{Construcción de ejecutables}
+
+\begin{verbatim}
+npm run exe:portable
+npm run exe:installer
+\end{verbatim}
+
+Ambos comandos construyen primero la aplicación web y luego invocan
+\archivo{electron-builder}. Los artefactos quedan en \archivo{release}. Para una
+entrega normal se publica el portable o el instalador. Los metadatos
+\archivo{latest.yml}, los bloques \archivo{.blockmap}, los archivos internos NSIS y
+la carpeta \archivo{win-unpacked} no forman parte de la entrega para usuarios.
+
+Windows SmartScreen puede advertir sobre el ejecutable porque el proyecto académico
+no posee un certificado comercial de firma. La procedencia debe comprobarse desde la
+sección oficial de Releases antes de elegir ``Más información'' y ``Ejecutar de todas
+formas''.
+
+% ================================================================
+\chapter{Cumplimiento del laboratorio}
+% ================================================================
+
+{\small
+\begin{longtable}{p{0.32\textwidth} p{0.59\textwidth}}
+\caption{Trazabilidad entre requisitos e implementación.}\label{tab:cumplimiento}\\
+\toprule
+Requisito & Evidencia en el proyecto \\
+\midrule
+\endfirsthead
+\toprule
+Requisito & Evidencia en el proyecto \\
+\midrule
+\endhead
+Analizar Compiscript & Gramática \archivo{src/grammars/Compiscript.g4} y clases generadas. \\
+Usar un generador & ANTLR 4 mediante \archivo{antlr4ts-cli}. \\
+Recibir archivos \cps & Selector y validación de extensión en \archivo{InputEditor.tsx}; validación equivalente en CLI. \\
+Integrar lexer y parser & \archivo{analyzeInput()} ejecuta ambos en el modo principal. \\
+Mostrar resultados & Resumen, tabla de tokens, grupos de errores y árbol textual/visual. \\
+Clasificar errores & Listas independientes \archivo{lexicalErrors} y \archivo{syntaxErrors}. \\
+Indicar ubicación & Listener con línea y columna base 1. \\
+Indicar símbolo & Campo \archivo{offendingSymbol} visible y serializable. \\
+Mensajes inteligibles & Traducción y especialización en \archivo{antlrErrors.ts}. \\
+Continuar tras un error & Tokenización completa y \archivo{DefaultErrorStrategy}. \\
+Evitar repeticiones & Deduplicación, agrupación, filtrado de cascadas y límite por fase. \\
+Confirmar éxito & Banner de aceptación cuando ambas listas están vacías. \\
+Interfaz amigable & React, componentes especializados y diseño adaptable. \\
+Limitar el alcance & Sin semántica, ejecución ni generación de código. \\
+Evidencia práctica & Ocho casos oficiales de la rúbrica, tres casos de distribución, tres casos integrados y 24 pruebas Vitest. \\
+\bottomrule
+\end{longtable}
+}
+
+La trazabilidad muestra que los requisitos funcionales del laboratorio poseen una
+implementación identificable y evidencia automatizada o visible. La UI no sustituye
+al generador: presenta resultados provenientes de las clases creadas por ANTLR.
+
+% ================================================================
+\chapter{Resultados, limitaciones y trabajo futuro}
+% ================================================================
+
+\section{Resultados obtenidos}
+
+El proyecto entrega un frente de compilador reutilizable en tres entornos. La
+gramática reconoce las construcciones previstas de Compiscript, el lexer conserva
+tokens posteriores a símbolos inválidos y el parser produce un árbol incluso después
+de recuperaciones posibles. La normalización hace que la salida sea más apropiada
+para una persona que aprende el lenguaje, sin ocultar la fase ni la ubicación del
+problema.
+
+La separación entre motor, tipos y presentación facilita las pruebas y evita que las
+reglas de aceptación dependan de React o Electron. Los ejemplos sincronizados reducen
+el riesgo de que la demostración visual difiera de los archivos entregados.
+
+\section{Limitaciones actuales}
+
+\begin{itemize}
+  \item La corrección se define solo a nivel léxico y sintáctico.
+  \item La recuperación puede producir un árbol parcial con tokens insertados o
+        descartados conceptualmente; ese árbol no debe confundirse con ejecución.
+  \item El límite de 100 diagnósticos prioriza una salida manejable sobre mostrar cada
+        consecuencia de una entrada extremadamente dañada.
+  \item El filtrado de cascadas usa cercanía de posición; es una mejora de
+        presentación, no un análisis causal formal de errores.
+  \item Los ejecutables configurados se dirigen a Windows x64.
+  \item La firma comercial de código no forma parte del proyecto académico.
+\end{itemize}
+
+\section{Trabajo futuro}
+
+Una evolución natural agregaría una tabla de símbolos y un visitor para comprobar
+declaraciones, ámbitos, herencia, llamadas y tipos. Después podría incorporarse un
+intérprete o una representación intermedia. También sería posible enriquecer los
+diagnósticos con fragmentos de fuente y subrayado, pruebas de propiedades para la
+gramática, medición de cobertura y empaquetado multiplataforma firmado.
+
+% ================================================================
+\chapter{Conclusiones}
+% ================================================================
+
+\begin{enumerate}
+  \item Una gramática declarativa permitió generar un lexer y parser reales y
+        mantener separadas la definición del lenguaje y la interfaz de usuario.
+  \item Forzar la tokenización completa antes del parseo es esencial para recolectar
+        múltiples errores léxicos y demostrar que el análisis continúa.
+  \item La recuperación predeterminada de ANTLR, acompañada de deduplicación,
+        agrupación y filtrado, produce diagnósticos más útiles que detenerse en la
+        primera anomalía o mostrar cascadas sin control.
+  \item La jerarquía de reglas de expresión implementa precedencia sin construir un
+        parser manual ni usar tablas SLR.
+  \item Un contrato único de resultado hizo posible reutilizar el analizador desde
+        React, la CLI y Electron, además de facilitar exportaciones y pruebas.
+  \item Las 24 pruebas automatizadas y la matriz de ocho casos de la rúbrica aportan
+        evidencia de cobertura, recuperación, continuidad y consistencia.
+  \item El proyecto cumple el propósito del Laboratorio 01 dentro de su alcance
+        léxico y sintáctico; las etapas semánticas y de generación quedan claramente
+        separadas como trabajo posterior.
+\end{enumerate}
+
+\begingroup
+\renewcommand{\bibname}{Referencias}
+\addcontentsline{toc}{chapter}{Referencias}
+\small
+\setlength{\parskip}{0pt}
+\begin{thebibliography}{9}
+\setlength{\itemsep}{0.45em}
+\setlength{\parsep}{0pt}
+
+\bibitem{aho}
+Alfred V. Aho, Monica S. Lam, Ravi Sethi y Jeffrey D. Ullman.
+\textit{Compilers: Principles, Techniques, and Tools}.
+Addison-Wesley, segunda edición, 2006.
+
+\bibitem{parr}
+Terence Parr.
+\textit{The Definitive ANTLR 4 Reference}.
+Pragmatic Bookshelf, segunda edición, 2013.
+
+\bibitem{antlr}
+ANTLR Project.
+\textit{ANTLR 4 Documentation}.
+\url{https://www.antlr.org/}
+
+\bibitem{typescript}
+Microsoft.
+\textit{TypeScript Documentation}.
+\url{https://www.typescriptlang.org/docs/}
+
+\bibitem{react}
+React Team.
+\textit{React Documentation}.
+\url{https://react.dev/}
+
+\bibitem{electron}
+OpenJS Foundation.
+\textit{Electron Documentation}.
+\url{https://www.electronjs.org/docs/}
+
+\bibitem{repo}
+DragonsSlayers 2.0.
+\textit{Analizador de Compiscript: código fuente, README, gramática, pruebas y documentación técnica}.
+Repositorio del Laboratorio 01, 2026.
+
+\end{thebibliography}
+\endgroup
+
+% ================================================================
+\appendix
+\chapter{Preguntas interesantes a las cuales se responde}
+% ================================================================
+
+\begin{description}
+  \item[¿El analizador es real?] Sí. La función principal instancia el lexer y el
+  parser de Compiscript generados por ANTLR e invoca \regla{program}.
+
+  \item[¿Cómo continúa después de errores?] El lexer completa el flujo mediante
+  \archivo{fill()} y el parser usa \archivo{DefaultErrorStrategy}; los listeners
+  acumulan diagnósticos en lugar de lanzar la interfaz al primer error.
+
+  \item[¿Cómo se evita repetir mensajes?] Se deduplican coincidencias exactas, se
+  agrupan caracteres contiguos, se omiten consecuencias sintácticas inmediatas de
+  errores léxicos y se limita la vista por fase.
+
+  \item[¿Por qué no hay tabla SLR?] ANTLR 4 genera un parser Adaptive LL(*), por lo
+  que no utiliza el algoritmo SLR ni sus tablas \archivo{ACTION/GOTO}.
+
+  \item[¿Qué prueba la aceptación?] Que no hubo errores léxicos ni sintácticos. No
+  prueba corrección de tipos ni comportamiento en ejecución.
+
+  \item[¿Por qué existe el código generado?] Es el resultado reproducible de aplicar
+  ANTLR a la gramática. Se versiona para ejecutar el proyecto sin exigir Java al
+  usuario final, pero se regenera después de cambiar \archivo{Compiscript.g4}.
+\end{description}
+
+\chapter{Inventario de comandos}
+
+\begin{tabularx}{\textwidth}{>{\ttfamily}l X}
+\toprule
+Comando & Propósito \\
+\midrule
+npm run generate & Regenerar lexer, parser, listener y visitor. \\
+npm run dev & Iniciar Vite en el puerto 3000. \\
+npm run check & Verificar tipos TypeScript sin emitir archivos. \\
+npm test & Ejecutar las 24 pruebas una vez. \\
+npm run build & Validar tipos y crear \archivo{dist}. \\
+npm run cli:valid & Analizar el ejemplo correcto desde terminal. \\
+npm run cli:error-lex & Demostrar errores léxicos; salida esperada 1. \\
+npm run cli:error-syn & Demostrar recuperación sintáctica; salida esperada 1. \\
+npm run cli -- archivo.cps & Analizar cualquier caso manual de la carpeta de ejemplos. \\
+npm run desktop & Construir web y abrir Electron. \\
+npm run exe:portable & Crear ejecutable portable Windows x64. \\
+npm run exe:installer & Crear instalador NSIS Windows x64. \\
+\bottomrule
+\end{tabularx}
+
+\chapter{Ficha técnica del producto}
+
+\begin{tabularx}{\textwidth}{>{\bfseries}l X}
+\toprule
+Elemento & Valor \\
+\midrule
+Lenguaje analizado & Compiscript \\
+Extensión de entrada & \cps \\
+Gramática & \archivo{src/grammars/Compiscript.g4} \\
+Generador & ANTLR 4 mediante \archivo{antlr4ts-cli} \\
+Lenguaje objetivo & TypeScript \\
+Frontend & React 19 y Vite 6 \\
+Pruebas & Vitest 3.2, 24 casos \\
+Escritorio & Electron 43 y electron-builder 26 \\
+Plataforma empaquetada & Windows x64 \\
+Motor visible & ANTLR 4 / antlr4ts, código generado \\
+Regla inicial & \regla{program} \\
+Recuperación & \archivo{DefaultErrorStrategy} \\
+Máximo visible & 100 diagnósticos por fase \\
+Salidas & UI, consola, CSV, JSON, TXT y árbol visual \\
+Alcance & Análisis léxico y sintáctico \\
+\bottomrule
+\end{tabularx}
+
+\vfill
+\begin{center}
+\color{uvgblue}\rule{0.75\textwidth}{0.8pt}\color{black}
+
+\textbf{DragonsSlayers 2.0}\par
+Laboratorio 01 -- Construcción de Compiladores CC-3032\par
+Documentación elaborada a partir de la versión actual del repositorio.
+\end{center}
+
+\end{document}
