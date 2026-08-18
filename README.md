@@ -164,6 +164,8 @@ La interfaz incluye:
 | SEM019 | Parámetro duplicado |
 | SEM020 | Herencia inválida/circular |
 | SEM021 | `switch` incompatible |
+| SEM022 | Expresión semánticamente inválida (reservado) |
+| SEM023 | Uso antes de inicialización |
 
 ---
 
