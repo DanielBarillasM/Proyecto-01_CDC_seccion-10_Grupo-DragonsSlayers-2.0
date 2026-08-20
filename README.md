@@ -15,11 +15,28 @@ IDE académico para ejecutar y explicar las fases léxica, sintáctica y semánt
 [![Electron](https://img.shields.io/badge/Electron-Desktop-47848F?style=flat-square&logo=electron&logoColor=white)](https://www.electronjs.org/)
 [![Tests](https://img.shields.io/badge/tests-105%20passing-15803D?style=flat-square)](compiscript-ide-work/src/__tests__)
 
-[Inicio rápido](#inicio-rápido) · [Capacidades](#qué-demuestra) · [Ejemplos](#ejemplos-preparados-para-la-rúbrica) · [Arquitectura](#arquitectura) · [Documentación](#documentación-y-exposición)
+[![Descargar versión portable](https://img.shields.io/badge/Descargar-Compiscript%20Semantic%20IDE%20V1.1.0-7C3AED?style=for-the-badge)](https://github.com/DanielBarillasM/Proyecto-01_CDC_seccion-10_Grupo-DragonsSlayers-2.0/releases/tag/Compiscript-Semantic-IDE-V1.1.0)
+
+[Descargar portable](#descargar-versión-portable) · [Inicio rápido](#inicio-rápido) · [Capacidades](#qué-demuestra) · [Ejemplos](#ejemplos-preparados-para-la-rúbrica) · [Arquitectura](#arquitectura) · [Documentación](#documentación-y-exposición)
 
 </div>
 
 ---
+
+## Descargar versión portable
+
+La distribución recomendada para Windows es **Compiscript Semantic IDE V1.1.0 Portable**:
+
+**[Abrir el release oficial y descargar la versión portable](https://github.com/DanielBarillasM/Proyecto-01_CDC_seccion-10_Grupo-DragonsSlayers-2.0/releases/tag/Compiscript-Semantic-IDE-V1.1.0)**
+
+1. Abra el enlace del release.
+2. Despliegue la sección **Assets**.
+3. Descargue el archivo portable de Windows.
+4. Ejecute el archivo directamente; no requiere instalación.
+
+> El instalador tradicional no se distribuye ni se recomienda para esta versión porque presentó problemas durante la instalación y ejecución. El release incluye únicamente la modalidad portable, que evita modificar el sistema y puede eliminarse borrando su archivo.
+
+Compatibilidad prevista: Windows 10/11 de 64 bits. Como el ejecutable académico no posee una firma digital comercial, Windows SmartScreen puede solicitar confirmación antes de abrirlo.
 
 ## Vista rápida
 
@@ -225,8 +242,9 @@ npm run desktop
 
 # Artefactos de Windows
 npm run exe:portable
-npm run exe:installer
 ```
+
+El comando anterior genera la modalidad portable usada por el [release V1.1.0](https://github.com/DanielBarillasM/Proyecto-01_CDC_seccion-10_Grupo-DragonsSlayers-2.0/releases/tag/Compiscript-Semantic-IDE-V1.1.0). No se recomienda generar ni distribuir el instalador.
 
 ## Decisiones frente al enunciado
 
@@ -280,7 +298,5 @@ npm test
 <div align="center">
 
 **DragonsSlayers 2.0 · Construcción de Compiladores · Sección 10**
-
-La autoría individual debe respaldarse con el historial real de Git; la documentación no sustituye la evidencia de commits.
 
 </div>
