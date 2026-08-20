@@ -61,8 +61,8 @@ export function isAssignable(
   }
 
   if (isInstanceType(target) && isInstanceType(source)) {
-    if (target.className === source.className) return true;
-    return isSubclassOf ? isSubclassOf(source.className, target.className) : false;
+    if (target.classId === source.classId) return true;
+    return isSubclassOf ? isSubclassOf(source.classId, target.classId) : false;
   }
 
   return false;

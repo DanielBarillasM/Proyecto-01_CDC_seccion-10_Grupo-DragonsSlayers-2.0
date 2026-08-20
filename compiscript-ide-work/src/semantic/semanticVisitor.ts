@@ -56,14 +56,18 @@ import type {
   WhileStatementContext
 } from "../generated/CompiscriptParser";
 import {
+  type ClassRegistry,
   type ClassInfo,
+  collectClassMembers,
   collectClassInfo,
   isSubclassOf,
+  linkParentClass,
   locOf,
   lookupField,
   lookupMethod,
   resolveParameters,
-  resolveType
+  resolveType,
+  validateInheritanceCycle
 } from "./declarationVisitor";
 import { createDiagnostic, resetDiagnosticCounter, type SemanticDiagnostic } from "./diagnostics";
 import { bodyGuaranteesReturn, findFirstUnreachableIndex } from "./flowAnalysis";
@@ -115,6 +119,7 @@ interface FunctionContext {
   scopeId: string;
   name: string;
   hasExplicitReturnType: boolean;
+  observedReturnTypes: SemanticType[];
 }
 
 const MAX_DIAGNOSTICS = 500;
@@ -124,9 +129,9 @@ export function runSemanticAnalysis(program: ProgramContext): SemanticAnalysisOu
   resetSemanticNodeCounter();
   const diagnostics: SemanticDiagnostic[] = [];
   const scopes = new ScopeManager(locOf(program));
-  const classInfoMap = collectClassInfo(program, diagnostics);
+  const classRegistry = collectClassInfo(program);
 
-  const analyzer = new SemanticAnalyzer(scopes, classInfoMap, diagnostics);
+  const analyzer = new SemanticAnalyzer(scopes, classRegistry, diagnostics);
   const tree = analyzer.run(program);
 
   const uniqueDiagnostics = diagnostics.filter((diagnostic, index, all) =>
@@ -152,7 +157,7 @@ class SemanticAnalyzer extends AbstractParseTreeVisitor<SemanticTreeNode> implem
 
   constructor(
     private scopes: ScopeManager,
-    private classInfoMap: Map<string, ClassInfo>,
+    private classRegistry: ClassRegistry,
     private diagnostics: SemanticDiagnostic[]
   ) {
     super();
@@ -177,7 +182,21 @@ class SemanticAnalyzer extends AbstractParseTreeVisitor<SemanticTreeNode> implem
   }
 
   private isSubclass(child: string, ancestor: string): boolean {
-    return isSubclassOf(this.classInfoMap, child, ancestor);
+    return isSubclassOf(this.classRegistry.byId, child, ancestor);
+  }
+
+  private resolveClass(name: string): ClassInfo | undefined {
+    const symbol = this.scopes.resolve(name);
+    if (!symbol || symbol.kind !== "class" || symbol.type.kind !== "class") return undefined;
+    return this.classRegistry.byId.get(symbol.type.classId);
+  }
+
+  private resolveSemanticType(ctx: Parameters<typeof resolveType>[0]): SemanticType {
+    return resolveType(ctx, (name) => this.resolveClass(name), this.diagnostics);
+  }
+
+  private resolveFunctionParameters(fn: FunctionDeclarationContext) {
+    return resolveParameters(fn, (name) => this.resolveClass(name), this.diagnostics);
   }
 
   run(program: ProgramContext): SemanticTreeNode[] {
@@ -211,20 +230,35 @@ class SemanticAnalyzer extends AbstractParseTreeVisitor<SemanticTreeNode> implem
     // `ScopeManager.declare()` es quien detecta la colisión y permite emitir
     // SEM002. Si simplemente omitiéramos el segundo registro, dos funciones
     // homónimas pasarían inadvertidas por el hoisting.
+    const declaredClasses: ClassInfo[] = [];
+    for (const stmt of statements) {
+      const cls = stmt.classDeclaration();
+      if (!cls) continue;
+      const info = this.declareClassSymbol(cls);
+      if (info) declaredClasses.push(info);
+    }
+
+    for (const info of declaredClasses) {
+      linkParentClass(info, (name) => this.resolveClass(name), this.diagnostics);
+    }
+    for (const info of declaredClasses) validateInheritanceCycle(info, this.diagnostics);
+    for (const info of declaredClasses) {
+      collectClassMembers(info, (name) => this.resolveClass(name), this.diagnostics);
+      const symbol = info.symbolId ? this.scopes.symbols.get(info.symbolId) : undefined;
+      if (symbol) symbol.members = [...info.fields.keys(), ...info.methods.keys()];
+    }
+
     for (const stmt of statements) {
       const fn = stmt.functionDeclaration();
       if (fn) this.declareFunctionSymbol(fn);
-
-      const cls = stmt.classDeclaration();
-      if (cls) this.declareClassSymbol(cls);
     }
   }
 
   private declareFunctionSymbol(fn: FunctionDeclarationContext): SymbolEntry | undefined {
     const name = fn.Identifier().text;
     const declaration = locOf(fn);
-    const { params } = resolveParameters(fn, this.classInfoMap, this.diagnostics);
-    const returnType = fn.type() ? resolveType(fn.type()!, this.classInfoMap, this.diagnostics) : T.void;
+    const { params } = this.resolveFunctionParameters(fn);
+    const returnType = fn.type() ? this.resolveSemanticType(fn.type()!) : T.unknown;
 
     const result = this.scopes.declare({
       name,
@@ -247,28 +281,30 @@ class SemanticAnalyzer extends AbstractParseTreeVisitor<SemanticTreeNode> implem
     return result.symbol;
   }
 
-  private declareClassSymbol(cls: ClassDeclarationContext): SymbolEntry | undefined {
+  private declareClassSymbol(cls: ClassDeclarationContext): ClassInfo | undefined {
     const name = cls.Identifier(0).text;
     const declaration = locOf(cls);
+    const info = this.classRegistry.byContext.get(cls);
+    if (!info) return undefined;
     const result = this.scopes.declare({
       name,
       kind: "class",
-      type: T.classType(name),
+      type: T.classType(name, info.id),
       mutable: false,
       initialized: true,
       declaration,
-      members: [...this.classInfoMap.get(name)?.fields.keys() ?? [], ...this.classInfoMap.get(name)?.methods.keys() ?? []],
-      parentClass: this.classInfoMap.get(name)?.parentName ?? undefined
+      members: [],
+      parentClass: info.parentName ?? undefined
     });
     if (!result.ok) {
-      // Ya reportado como SEM002 en collectClassInfo si aplicaba a nivel de
-      // clases; aquí solo se evita duplicar si colisiona con otro símbolo.
-      if (result.existing.kind !== "class") {
-        this.report("SEM002", "error", declaration, `'${name}' ya fue declarado en este ámbito.`, { symbol: name });
-      }
+      this.report("SEM002", "error", declaration, `'${name}' ya fue declarado en este ámbito.`, {
+        symbol: name,
+        related: [{ message: "Declaración original.", line: result.existing.declaration.line, column: result.existing.declaration.column }]
+      });
       return undefined;
     }
-    return result.symbol;
+    info.symbolId = result.symbol.id;
+    return info;
   }
 
   // ────────────────────────────────────────────────────────────────────
@@ -322,7 +358,7 @@ class SemanticAnalyzer extends AbstractParseTreeVisitor<SemanticTreeNode> implem
     const name = ctx.Identifier().text;
     const declaration = locOf(ctx);
     const typeAnnotation = ctx.typeAnnotation();
-    const declaredType = typeAnnotation ? resolveType(typeAnnotation.type(), this.classInfoMap, this.diagnostics) : undefined;
+    const declaredType = typeAnnotation ? this.resolveSemanticType(typeAnnotation.type()) : undefined;
 
     let initType: SemanticType | undefined;
     let initNode: SemanticTreeNode | undefined;
@@ -377,7 +413,7 @@ class SemanticAnalyzer extends AbstractParseTreeVisitor<SemanticTreeNode> implem
     const name = ctx.Identifier().text;
     const declaration = locOf(ctx);
     const typeAnnotation = ctx.typeAnnotation();
-    const declaredType = typeAnnotation ? resolveType(typeAnnotation.type(), this.classInfoMap, this.diagnostics) : undefined;
+    const declaredType = typeAnnotation ? this.resolveSemanticType(typeAnnotation.type()) : undefined;
 
     const initResult = this.evaluateExpression(ctx.expression());
     let finalType = declaredType ?? initResult.type;
@@ -432,8 +468,13 @@ class SemanticAnalyzer extends AbstractParseTreeVisitor<SemanticTreeNode> implem
       symbol = this.declareFunctionSymbol(ctx);
     }
 
-    const { params } = resolveParameters(ctx, this.classInfoMap, this.diagnostics);
-    const returnType = ctx.type() ? resolveType(ctx.type()!, this.classInfoMap, this.diagnostics) : T.void;
+    const { params } = this.resolveFunctionParameters(ctx);
+    const hasExplicitReturnType = Boolean(ctx.type());
+    const declaredReturnType = ctx.type()
+      ? this.resolveSemanticType(ctx.type()!)
+      : name === "constructor"
+        ? T.void
+        : T.unknown;
 
     const functionScope = this.scopes.enterScope("function", name, declaration);
     this.funcScopeStack.push(functionScope.id);
@@ -442,7 +483,7 @@ class SemanticAnalyzer extends AbstractParseTreeVisitor<SemanticTreeNode> implem
       this.scopes.declare({
         name: "this",
         kind: "parameter",
-        type: T.instance(ownerClass.name),
+        type: T.instance(ownerClass.name, ownerClass.id),
         mutable: false,
         initialized: true,
         declaration
@@ -463,21 +504,43 @@ class SemanticAnalyzer extends AbstractParseTreeVisitor<SemanticTreeNode> implem
       }
     }
 
-    this.functionStack.push({ returnType, scopeId: functionScope.id, name, hasExplicitReturnType: Boolean(ctx.type()) });
+    const functionContext: FunctionContext = {
+      returnType: declaredReturnType,
+      scopeId: functionScope.id,
+      name,
+      hasExplicitReturnType,
+      observedReturnTypes: []
+    };
+    this.functionStack.push(functionContext);
 
     const bodyStatements = ctx.block().statement();
     const bodyChildren = this.analyzeBlockStatements(bodyStatements);
 
-    if (returnType.kind !== "primitive" || returnType.name !== "void") {
+    if (hasExplicitReturnType && (declaredReturnType.kind !== "primitive" || declaredReturnType.name !== "void")) {
       if (!bodyGuaranteesReturn(bodyStatements)) {
         this.report(
           "SEM008",
           "warning",
           declaration,
-          `La función '${name}' declara un tipo de retorno '${displayType(returnType)}' pero no garantiza un 'return' en todas sus rutas.`,
+          `La función '${name}' declara un tipo de retorno '${displayType(declaredReturnType)}' pero no garantiza un 'return' en todas sus rutas.`,
           { symbol: name }
         );
       }
+    }
+
+    let finalReturnType = declaredReturnType;
+    if (!hasExplicitReturnType && name !== "constructor") {
+      if (functionContext.observedReturnTypes.length === 0) {
+        finalReturnType = T.void;
+      } else {
+        finalReturnType = commonType(functionContext.observedReturnTypes) ?? T.unknown;
+      }
+      if (symbol) {
+        symbol.returnType = finalReturnType;
+        symbol.type = T.fn(params.map((param) => param.type), finalReturnType);
+      }
+      const method = ownerClass?.methods.get(name);
+      if (method) method.returnType = finalReturnType;
     }
 
     this.functionStack.pop();
@@ -486,12 +549,12 @@ class SemanticAnalyzer extends AbstractParseTreeVisitor<SemanticTreeNode> implem
 
     return createSemanticNode(
       isMethod ? "method-declaration" : "function-declaration",
-      `${isMethod ? "método" : "function"} ${name}(${params.map((p) => `${p.name}: ${displayType(p.type)}`).join(", ")}): ${displayType(returnType)}`,
+      `${isMethod ? "método" : "function"} ${name}(${params.map((p) => `${p.name}: ${displayType(p.type)}`).join(", ")}): ${displayType(finalReturnType)}`,
       {
         location: declaration,
         symbolId: symbol?.id,
         scopeId: functionScope.id,
-        inferredType: displayType(returnType),
+        inferredType: displayType(finalReturnType),
         children: bodyChildren
       }
     );
@@ -500,11 +563,10 @@ class SemanticAnalyzer extends AbstractParseTreeVisitor<SemanticTreeNode> implem
   private analyzeClassDeclaration(ctx: ClassDeclarationContext): SemanticTreeNode {
     const name = ctx.Identifier(0).text;
     const declaration = locOf(ctx);
-    const info = this.classInfoMap.get(name);
-    let symbol = this.scopes.resolveLocal(name, this.scopes.currentScopeId());
-    if (!symbol) symbol = this.declareClassSymbol(ctx);
+    const info = this.classRegistry.byContext.get(ctx);
+    const symbol = this.scopes.resolveLocal(name, this.scopes.currentScopeId());
 
-    if (!info) {
+    if (!info || !info.symbolId || !symbol || symbol.kind !== "class") {
       return createSemanticNode("class-declaration", `class ${name}`, { location: declaration, symbolId: symbol?.id });
     }
 
@@ -512,23 +574,27 @@ class SemanticAnalyzer extends AbstractParseTreeVisitor<SemanticTreeNode> implem
     this.classStack.push(info);
     this.declareClassMembers(info);
 
-    const children: SemanticTreeNode[] = [];
+    const memberNodes = new Map<ParserRuleContext, SemanticTreeNode>();
+
+    // Los campos se evalúan antes que los métodos, independientemente del
+    // orden textual. Así las firmas de retorno observan los tipos inferidos
+    // de todos los inicializadores de la clase.
     for (const member of ctx.classMember()) {
-      const fn = member.functionDeclaration();
-      if (fn) {
-        children.push(this.analyzeFunctionDeclaration(fn, true, info));
-        continue;
-      }
       const varDecl = member.variableDeclaration();
       if (varDecl) {
-        children.push(this.visitClassField(varDecl, info));
+        memberNodes.set(member, this.visitClassField(varDecl, info));
         continue;
       }
       const constDecl = member.constantDeclaration();
       if (constDecl) {
-        children.push(this.visitClassConstField(constDecl, info));
+        memberNodes.set(member, this.visitClassConstField(constDecl, info));
       }
     }
+    for (const member of ctx.classMember()) {
+      const fn = member.functionDeclaration();
+      if (fn) memberNodes.set(member, this.analyzeFunctionDeclaration(fn, true, info));
+    }
+    const children = ctx.classMember().map((member) => memberNodes.get(member)!).filter(Boolean);
 
     this.classStack.pop();
     this.scopes.exitScope(declaration);
@@ -543,7 +609,7 @@ class SemanticAnalyzer extends AbstractParseTreeVisitor<SemanticTreeNode> implem
 
   private declareClassMembers(owner: ClassInfo): void {
     for (const field of owner.fields.values()) {
-      this.scopes.declare({
+      const result = this.scopes.declare({
         name: field.name,
         kind: "field",
         type: field.type,
@@ -551,10 +617,11 @@ class SemanticAnalyzer extends AbstractParseTreeVisitor<SemanticTreeNode> implem
         initialized: field.mutable ? false : true,
         declaration: field.declaration
       });
+      if (result.ok) field.symbolId = result.symbol.id;
     }
 
     for (const method of owner.methods.values()) {
-      this.scopes.declare({
+      const result = this.scopes.declare({
         name: method.name,
         kind: "method",
         type: T.fn(method.params.map((param) => param.type), method.returnType),
@@ -564,6 +631,7 @@ class SemanticAnalyzer extends AbstractParseTreeVisitor<SemanticTreeNode> implem
         parameters: method.params,
         returnType: method.returnType
       });
+      if (result.ok) method.symbolId = result.symbol.id;
     }
   }
 
@@ -627,10 +695,10 @@ class SemanticAnalyzer extends AbstractParseTreeVisitor<SemanticTreeNode> implem
     const cond = this.evaluateExpression(ctx.expression());
     this.assertBoolean(cond.type, locOf(ctx.expression()), "la condición de 'if'");
 
-    const branches = ctx.statement();
-    const thenNode = branches[0].accept(this);
+    const branches = ctx.block();
+    const thenNode = this.analyzeBlock(branches[0]);
     const children = [cond.node, thenNode];
-    if (branches.length > 1) children.push(branches[1].accept(this));
+    if (branches.length > 1) children.push(this.analyzeBlock(branches[1]));
 
     return createSemanticNode("if", "if / else", { location: locOf(ctx), children });
   }
@@ -638,12 +706,12 @@ class SemanticAnalyzer extends AbstractParseTreeVisitor<SemanticTreeNode> implem
   private analyzeWhileStatement(ctx: WhileStatementContext): SemanticTreeNode {
     const cond = this.evaluateExpression(ctx.expression());
     this.assertBoolean(cond.type, locOf(ctx.expression()), "la condición de 'while'");
-    const bodyNode = this.visitLoopBody(ctx.statement());
+    const bodyNode = this.analyzeBlock(ctx.block(), "loop", "cuerpo de while");
     return createSemanticNode("while", "while", { location: locOf(ctx), children: [cond.node, bodyNode] });
   }
 
   private analyzeDoWhileStatement(ctx: DoWhileStatementContext): SemanticTreeNode {
-    const bodyNode = this.visitLoopBody(ctx.statement());
+    const bodyNode = this.analyzeBlock(ctx.block(), "loop", "cuerpo de do-while");
     const cond = this.evaluateExpression(ctx.expression());
     this.assertBoolean(cond.type, locOf(ctx.expression()), "la condición de 'do...while'");
     return createSemanticNode("do-while", "do ... while", { location: locOf(ctx), children: [bodyNode, cond.node] });
@@ -682,7 +750,7 @@ class SemanticAnalyzer extends AbstractParseTreeVisitor<SemanticTreeNode> implem
       }
     }
 
-    const bodyNode = ctx.statement().accept(this);
+    const bodyNode = this.analyzeBlock(ctx.block());
     this.scopes.exitScope(locOf(ctx));
 
     const children = [initNode, condNode, updateNode, bodyNode].filter(Boolean) as SemanticTreeNode[];
@@ -695,7 +763,7 @@ class SemanticAnalyzer extends AbstractParseTreeVisitor<SemanticTreeNode> implem
       const name = identifier.text;
       const declaration = locOf(ctx);
       const typeAnnotation = ctx.typeAnnotation();
-      const declaredType = typeAnnotation ? resolveType(typeAnnotation.type(), this.classInfoMap, this.diagnostics) : undefined;
+      const declaredType = typeAnnotation ? this.resolveSemanticType(typeAnnotation.type()) : undefined;
       let initType: SemanticType | undefined;
       let initNode: SemanticTreeNode | undefined;
       if (ctx.initializer()) {
@@ -762,23 +830,13 @@ class SemanticAnalyzer extends AbstractParseTreeVisitor<SemanticTreeNode> implem
       this.report("SEM002", "error", declaration, `'${name}' ya fue declarado en este ámbito.`, { symbol: name });
     }
 
-    const bodyNode = ctx.statement().accept(this);
+    const bodyNode = this.analyzeBlock(ctx.block());
     this.scopes.exitScope(declaration);
 
     return createSemanticNode("foreach", `foreach (${name} in ...)`, {
       location: declaration,
       children: [iterableResult.node, bodyNode]
     });
-  }
-
-  private visitLoopBody(ctx: StatementContext): SemanticTreeNode {
-    // Si el cuerpo ya es un bloque `{ }`, se abre como ámbito "loop" para
-    // que break/continue lo detecten sin duplicar el ámbito del `while`.
-    if (ctx.block()) return this.analyzeBlock(ctx.block()!, "loop", "cuerpo del ciclo");
-    this.scopes.enterScope("loop", "cuerpo del ciclo", locOf(ctx));
-    const node = ctx.accept(this);
-    this.scopes.exitScope(locOf(ctx));
-    return node;
   }
 
   private analyzeTryCatchStatement(ctx: TryCatchStatementContext): SemanticTreeNode {
@@ -883,10 +941,12 @@ class SemanticAnalyzer extends AbstractParseTreeVisitor<SemanticTreeNode> implem
           `La función '${current.name}' debe devolver un valor de tipo '${displayType(current.returnType)}'.`
         );
       }
+      current.observedReturnTypes.push(T.void);
       return createSemanticNode("return", "return;", { location: locOf(ctx) });
     }
 
     const result = this.evaluateExpression(ctx.expression()!);
+    current.observedReturnTypes.push(result.type);
     if (current.hasExplicitReturnType && !isAssignable(current.returnType, result.type, (c, p) => this.isSubclass(c, p))) {
       this.report(
         "SEM008",
@@ -1223,13 +1283,13 @@ class SemanticAnalyzer extends AbstractParseTreeVisitor<SemanticTreeNode> implem
   private evaluateLeftHandSide(ctx: LeftHandSideContext, asAssignmentTarget: boolean): ExprResult {
     const directAssignmentTarget = asAssignmentTarget && ctx.suffixOperator().length === 0;
     let current = this.evaluatePrimaryAtom(ctx.primaryAtom(), directAssignmentTarget);
-    let currentClassName: string | null = current.type.kind === "instance" ? current.type.className : null;
+    let currentClassId: string | null = current.type.kind === "instance" ? current.type.classId : null;
     let lastWasCall = false;
 
     for (const suffix of ctx.suffixOperator()) {
-      const result = this.visitSuffix(suffix, current, currentClassName);
+      const result = this.visitSuffix(suffix, current, currentClassId);
       current = result.result;
-      currentClassName = result.newClassName;
+      currentClassId = result.newClassId;
       lastWasCall = result.wasCall;
     }
 
@@ -1257,7 +1317,7 @@ class SemanticAnalyzer extends AbstractParseTreeVisitor<SemanticTreeNode> implem
 
     if (ctx.NEW()) {
       const className = ctx.Identifier()!.text;
-      const info = this.classInfoMap.get(className);
+      const info = this.resolveClass(className);
       const args = ctx.arguments() ? ctx.arguments()!.expression().map((e) => this.evaluateExpression(e)) : [];
 
       if (!info) {
@@ -1265,11 +1325,12 @@ class SemanticAnalyzer extends AbstractParseTreeVisitor<SemanticTreeNode> implem
         return { type: T.error, node: createSemanticNode("new", `new ${className}(...)`, { location: loc, inferredType: "error", children: args.map((a) => a.node) }) };
       }
 
-      const constructor = lookupMethod(this.classInfoMap, className, "constructor");
+      if (info.symbolId) this.scopes.addReference(info.symbolId, loc);
+      const constructor = lookupMethod(this.classRegistry.byId, info.id, "constructor");
       this.checkArguments(constructor?.params ?? [], args, loc, `el constructor de '${className}'`);
 
       return {
-        type: T.instance(className),
+        type: T.instance(className, info.id),
         node: createSemanticNode("new", `new ${className}(...)`, { location: loc, inferredType: className, children: args.map((a) => a.node) })
       };
     }
@@ -1309,8 +1370,8 @@ class SemanticAnalyzer extends AbstractParseTreeVisitor<SemanticTreeNode> implem
   private visitSuffix(
     ctx: SuffixOperatorContext,
     current: ExprResult,
-    currentClassName: string | null
-  ): { result: ExprResult; newClassName: string | null; wasCall: boolean } {
+    currentClassId: string | null
+  ): { result: ExprResult; newClassId: string | null; wasCall: boolean } {
     const loc = locOf(ctx);
 
     // Llamada: (arguments?)
@@ -1322,7 +1383,7 @@ class SemanticAnalyzer extends AbstractParseTreeVisitor<SemanticTreeNode> implem
         }
         return {
           result: { type: T.error, node: createSemanticNode("call", "(...)", { location: loc, inferredType: "error", children: [current.node, ...args.map((a) => a.node)] }) },
-          newClassName: null,
+          newClassId: null,
           wasCall: true
         };
       }
@@ -1333,7 +1394,7 @@ class SemanticAnalyzer extends AbstractParseTreeVisitor<SemanticTreeNode> implem
           type: returnType,
           node: createSemanticNode("call", "(...)", { location: loc, inferredType: displayType(returnType), children: [current.node, ...args.map((a) => a.node)] })
         },
-        newClassName: returnType.kind === "instance" ? returnType.className : null,
+        newClassId: returnType.kind === "instance" ? returnType.classId : null,
         wasCall: true
       };
     }
@@ -1352,7 +1413,7 @@ class SemanticAnalyzer extends AbstractParseTreeVisitor<SemanticTreeNode> implem
         }
         return {
           result: { type: T.error, node: createSemanticNode("index", "[...]", { location: loc, inferredType: "error", children: [current.node, indexResult.node] }) },
-          newClassName: null,
+          newClassId: null,
           wasCall: false
         };
       }
@@ -1362,14 +1423,14 @@ class SemanticAnalyzer extends AbstractParseTreeVisitor<SemanticTreeNode> implem
           type: elementType,
           node: createSemanticNode("index", "[...]", { location: loc, inferredType: displayType(elementType), children: [current.node, indexResult.node] })
         },
-        newClassName: elementType.kind === "instance" ? elementType.className : null,
+        newClassId: elementType.kind === "instance" ? elementType.classId : null,
         wasCall: false
       };
     }
 
     // Acceso a miembro: .Identifier
     const memberName = ctx.Identifier()!.text;
-    if (!currentClassName) {
+    if (!currentClassId) {
       if (!isAbsorbing(current.type)) {
         this.report("SEM012", "error", loc, `No se puede acceder a '.${memberName}' sobre un valor de tipo '${displayType(current.type)}'.`, {
           symbol: memberName
@@ -1377,13 +1438,15 @@ class SemanticAnalyzer extends AbstractParseTreeVisitor<SemanticTreeNode> implem
       }
       return {
         result: { type: T.error, node: createSemanticNode("member", `.${memberName}`, { location: loc, inferredType: "error", children: [current.node] }) },
-        newClassName: null,
+        newClassId: null,
         wasCall: false
       };
     }
 
-    const field = lookupField(this.classInfoMap, currentClassName, memberName);
+    const owner = this.classRegistry.byId.get(currentClassId);
+    const field = lookupField(this.classRegistry.byId, currentClassId, memberName);
     if (field) {
+      if (field.symbolId) this.scopes.addReference(field.symbolId, loc);
       return {
         result: {
           type: field.type,
@@ -1391,13 +1454,14 @@ class SemanticAnalyzer extends AbstractParseTreeVisitor<SemanticTreeNode> implem
           mutableTarget: field.mutable,
           targetLabel: `.${memberName}`
         },
-        newClassName: field.type.kind === "instance" ? field.type.className : null,
+        newClassId: field.type.kind === "instance" ? field.type.classId : null,
         wasCall: false
       };
     }
 
-    const method = lookupMethod(this.classInfoMap, currentClassName, memberName);
+    const method = lookupMethod(this.classRegistry.byId, currentClassId, memberName);
     if (method) {
+      if (method.symbolId) this.scopes.addReference(method.symbolId, loc);
       const fnType = T.fn(method.params.map((p) => p.type), method.returnType);
       return {
         result: {
@@ -1406,15 +1470,15 @@ class SemanticAnalyzer extends AbstractParseTreeVisitor<SemanticTreeNode> implem
           mutableTarget: false,
           targetLabel: `.${memberName}`
         },
-        newClassName: null,
+        newClassId: null,
         wasCall: false
       };
     }
 
-    this.report("SEM012", "error", loc, `La clase '${currentClassName}' no tiene un miembro '${memberName}'.`, { symbol: memberName });
+    this.report("SEM012", "error", loc, `La clase '${owner?.name ?? "desconocida"}' no tiene un miembro '${memberName}'.`, { symbol: memberName });
     return {
       result: { type: T.error, node: createSemanticNode("member", `.${memberName}`, { location: loc, inferredType: "error", children: [current.node] }) },
-      newClassName: null,
+      newClassId: null,
       wasCall: false
     };
   }

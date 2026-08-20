@@ -20,7 +20,7 @@ describe("analizador de Compiscript", () => {
     ["while, do-while y for", `let x = 0;\nwhile (x < 2) { x = x + 1; }\ndo { x = x - 1; } while (x > 0);\nfor (let i: integer = 0; i < 3; i = i + 1) { print(i); }`],
     ["switch y try/catch", `switch (x) { case 1: print("uno"); case 2: break; default: print("otro"); }\ntry { print(lista[0]); } catch (err) { print(err); }`],
     ["clases, herencia y new", `class Animal { let nombre: string; function hablar(): string { return this.nombre; } }\nclass Perro : Animal {}\nlet perro: Perro = new Perro();\nperro.nombre = "Toby";`],
-    ["closures y recursión", `function exterior(): integer { function interior(): integer { return 1; } return interior(); }\nfunction factorial(n: integer): integer { if (n <= 1) return 1; return n * factorial(n - 1); }`]
+    ["closures y recursión", `function exterior(): integer { function interior(): integer { return 1; } return interior(); }\nfunction factorial(n: integer): integer { if (n <= 1) { return 1; } return n * factorial(n - 1); }`]
   ])("acepta %s", (_name, input) => {
     expect(analyzeInput(input).accepted).toBe(true);
   });

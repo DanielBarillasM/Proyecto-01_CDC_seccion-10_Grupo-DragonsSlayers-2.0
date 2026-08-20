@@ -1,11 +1,17 @@
 # Documentación del Proyecto 1
 
-## Documentos vigentes
+Esta carpeta contiene únicamente documentos vigentes de la fase de análisis semántico.
 
-- `ARQUITECTURA_PROYECTO_1.md`: arquitectura del pipeline y responsabilidades de módulos.
-- `DECISIONES_SEMANTICAS.md`: decisiones de tipos, ámbitos, `float`, `switch`, closures y clases.
-- `AUDITORIA_PROYECTO_1.md`: problemas encontrados en la versión de V0, correcciones, regresiones y estado de verificación.
+| Documento | Uso recomendado |
+| --- | --- |
+| `ARQUITECTURA_PROYECTO_1.md` | Comprender módulos, pipeline, identidades de clase y tabla de símbolos |
+| `DECISIONES_SEMANTICAS.md` | Justificar `float`, `switch`, ámbitos, inferencia y otras políticas |
+| `AUDITORIA_PROYECTO_1.md` | Revisar bugs encontrados, correcciones y evidencia final |
+| `MATRIZ_REQUISITOS.md` | Relacionar cada regla del enunciado con implementación y pruebas |
+| `informe/INFORME_PROYECTO_01.tex` | Fuente editable del informe académico |
+| `informe/INFORME_PROYECTO_01.pdf` | Informe compilado listo para entregar |
+| `../presentation/compiscript-proyecto-1.html` | Presentación interactiva para la exposición |
 
-## Material heredado
+Los documentos del Laboratorio 1, copias del enunciado y resúmenes históricos se retiraron para evitar que se confundan con el alcance actual.
 
-Las carpetas `informe/`, `guión/` y `enunciado/` provienen del Laboratorio 1 y se conservan únicamente como **referencia histórica del punto de partida**. No describen el alcance final del Proyecto 1.
+Para casos ejecutables y trazables consulte `../examples/semantic/README.md`.

@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
-import { AcademicNotice } from "./components/AcademicNotice";
 import { CaseSelector } from "./components/CaseSelector";
+import { CompilerGuide } from "./components/CompilerGuide";
 import { DocumentationPanel } from "./components/DocumentationPanel";
 import { DownloadButtons } from "./components/DownloadButtons";
 import { ErrorPanel } from "./components/ErrorPanel";
@@ -10,10 +10,7 @@ import { InputEditor } from "./components/InputEditor";
 import { ParseTreePanel } from "./components/ParseTreePanel";
 import { ProjectTabs } from "./components/ProjectTabs";
 import { ResultStatus } from "./components/ResultStatus";
-import { ScopeTreePanel } from "./components/ScopeTreePanel";
-import { SemanticDiagnosticsPanel } from "./components/SemanticDiagnosticsPanel";
-import { SemanticTreePanel } from "./components/SemanticTreePanel";
-import { SymbolTablePanel } from "./components/SymbolTablePanel";
+import { SemanticResultExplorer } from "./components/SemanticResultExplorer";
 import { TokenTable } from "./components/TokenTable";
 import { analyzeInput } from "../lib/analyze";
 import { exampleCase } from "../lib/examples";
@@ -93,7 +90,6 @@ export function App() {
   return (
     <main className="shell">
       <Header />
-      <AcademicNotice />
       <ProjectTabs active={activeTab} onChange={handleTabChange} />
 
       {activeTab === "semantic" && (
@@ -105,13 +101,27 @@ export function App() {
             description="Ejecuta el pipeline completo de Compiscript: lexer, parser y análisis semántico con sistema de tipos, ámbitos, funciones, clases, control de flujo, tabla de símbolos y árbol semántico anotado."
           />
 
-          <div className="config-grid">
-            <section className="panel">
+          <div className="semantic-workbench">
+            <aside className="workbench-sidebar">
+              <CompilerGuide />
+              <section className="workbench-case-card">
+                <div className="workbench-section-label">Entrada de demostración</div>
+                <CaseSelector value={mode} onChange={handleModeChange} includeSemantic />
+              </section>
+              <details className="grammar-drawer">
+                <summary>Consultar gramática activa</summary>
+                <div className="grammar-drawer-content"><GrammarViewer /></div>
+              </details>
+            </aside>
+
+            <section className="panel workbench-editor-panel">
               <div className="panel-header">
-                <h3>Editor Compiscript</h3>
-                <span className="panel-subtitle">Entrada .cps para las tres fases del compilador</span>
+                <div>
+                  <span className="guide-kicker">Área de trabajo</span>
+                  <h3>Editor Compiscript</h3>
+                </div>
+                <span className="panel-subtitle">Escribe o carga un archivo .cps y ejecuta las tres fases</span>
               </div>
-              <CaseSelector value={mode} onChange={handleModeChange} includeSemantic />
               <InputEditor
                 value={inputValue}
                 mode={mode}
@@ -121,14 +131,6 @@ export function App() {
                 onClear={handleClear}
               />
               {analyzeError && <div className="analyze-error">{analyzeError}</div>}
-            </section>
-
-            <section className="panel">
-              <div className="panel-header">
-                <h3>Gramática ANTLR activa</h3>
-                <span className="panel-subtitle">Base sintáctica sobre la que se aplican las reglas semánticas</span>
-              </div>
-              <GrammarViewer />
             </section>
           </div>
 
@@ -146,59 +148,8 @@ export function App() {
                 </section>
               )}
 
-              <section className="panel">
-                <div className="panel-header">
-                  <h3>Diagnósticos semánticos</h3>
-                  <span className="panel-subtitle">Reglas de tipos, nombres, llamadas, flujo, clases, listas y código inalcanzable</span>
-                </div>
-                <SemanticDiagnosticsPanel result={result} />
-              </section>
-
               {result.semantic.status === "completed" && (
-                <>
-                  <section className="panel">
-                    <div className="panel-header">
-                      <h3>Tabla de símbolos</h3>
-                      <span className="panel-subtitle">Variables, constantes, parámetros, funciones, clases, campos, métodos y referencias</span>
-                    </div>
-                    <SymbolTablePanel result={result} />
-                  </section>
-
-                  <div className="results-grid semantic-results-grid">
-                    <section className="panel">
-                      <div className="panel-header">
-                        <h3>Árbol de ámbitos</h3>
-                        <span className="panel-subtitle">Entornos globales, funciones, clases, bloques, ciclos, switch y catch</span>
-                      </div>
-                      <ScopeTreePanel result={result} />
-                    </section>
-
-                    <section className="panel semantic-metrics-panel">
-                      <div className="panel-header">
-                        <h3>Métricas semánticas</h3>
-                        <span className="panel-subtitle">Trazabilidad del análisis y closures</span>
-                      </div>
-                      <div className="semantic-metric-list">
-                        <MetricRow label="Símbolos registrados" value={result.semantic.metrics.symbolCount} />
-                        <MetricRow label="Ámbitos creados" value={result.semantic.metrics.scopeCount} />
-                        <MetricRow label="Referencias resueltas" value={result.semantic.metrics.referenceCount} />
-                        <MetricRow label="Variables capturadas por closures" value={result.semantic.metrics.capturedVariableCount} />
-                      </div>
-                    </section>
-                  </div>
-
-                  <section className="panel">
-                    <div className="panel-header">
-                      <h3>Árbol semántico anotado</h3>
-                      <span className="panel-subtitle">Proyección del CST con tipos inferidos, símbolos y diagnósticos</span>
-                    </div>
-                    <SemanticTreePanel result={result} />
-                  </section>
-
-                  <section className="panel">
-                    <ParseTreePanel result={result} />
-                  </section>
-                </>
+                <SemanticResultExplorer result={result} />
               )}
 
               <DownloadButtons result={result} inputText={inputValue} />
@@ -296,15 +247,6 @@ export function App() {
         </div>
       )}
     </main>
-  );
-}
-
-function MetricRow({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="semantic-metric-row">
-      <span>{label}</span>
-      <strong>{value}</strong>
-    </div>
   );
 }
 

@@ -28,9 +28,9 @@ export function statementTerminates(ctx: StatementContext): boolean {
 
   const ifStmt = ctx.ifStatement();
   if (ifStmt) {
-    const branches = ifStmt.statement();
+    const branches = ifStmt.block();
     if (branches.length < 2) return false; // sin `else`, no puede garantizar terminación
-    return statementTerminates(branches[0]) && statementTerminates(branches[1]);
+    return blockTerminates(branches[0].statement()) && blockTerminates(branches[1].statement());
   }
 
   return false;
@@ -51,12 +51,20 @@ function statementReturnsOnAllPaths(ctx: StatementContext): boolean {
 
   const ifStmt = ctx.ifStatement();
   if (ifStmt) {
-    const branches = ifStmt.statement();
+    const branches = ifStmt.block();
     if (branches.length < 2) return false;
-    return statementReturnsOnAllPaths(branches[0]) && statementReturnsOnAllPaths(branches[1]);
+    return blockReturnsOnAllPaths(branches[0].statement()) && blockReturnsOnAllPaths(branches[1].statement());
   }
 
   return false;
+}
+
+function blockTerminates(statements: StatementContext[]): boolean {
+  return statements.some((statement) => statementTerminates(statement));
+}
+
+function blockReturnsOnAllPaths(statements: StatementContext[]): boolean {
+  return statements.some((statement) => statementReturnsOnAllPaths(statement));
 }
 
 /** Marca el primer statement inalcanzable dentro de una lista, aplicando

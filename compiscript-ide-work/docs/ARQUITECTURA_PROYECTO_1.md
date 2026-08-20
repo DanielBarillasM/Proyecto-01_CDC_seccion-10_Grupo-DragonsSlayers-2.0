@@ -1,80 +1,119 @@
-# Arquitectura — Compiscript Semantic IDE
+# Arquitectura del Compiscript Semantic IDE
 
 ## Vista general
 
 ```text
-.cps
- │
- ▼
-ANTLRInputStream
- │
- ▼
-CompiscriptLexer ───────────────► tokens + errores léxicos
- │
- ▼
+Fuente .cps
+  |
+  v
+CompiscriptLexer ----------> tokens y errores léxicos
+  |
+  v
 CommonTokenStream
- │
- ▼
-CompiscriptParser.program() ────► CST + errores sintácticos
- │
- │ (solo si lexer/parser son válidos)
- ▼
-collectClassInfo()
- │
- ▼
-SemanticAnalyzer
- ├── ScopeManager ──────────────► tabla de símbolos + árbol de ámbitos
- ├── typeSystem.ts ─────────────► compatibilidad e inferencia de tipos
- ├── flowAnalysis.ts ───────────► retornos + código inalcanzable
- ├── diagnostics.ts ────────────► SEM001..SEM021
- └── ast.ts ────────────────────► árbol semántico anotado
- │
- ▼
+  |
+  v
+CompiscriptParser.program() -> CST y errores sintácticos
+  |
+  | solo si lexer y parser son válidos
+  v
+ClassRegistry + hoisting por ámbito
+  |
+  v
+SemanticAnalyzer (Visitor de ANTLR)
+  |-- ScopeManager ----------> símbolos, referencias y ámbitos
+  |-- declarationVisitor ---> clases, miembros, firmas y herencia
+  |-- typeSystem -----------> asignabilidad, operadores e inferencia
+  |-- flowAnalysis ---------> retornos y código inalcanzable
+  |-- diagnostics ----------> SEM001..SEM023
+  `-- ast ------------------> árbol semántico tipado
+  |
+  v
 AnalyzeResult
- │
- ├── React UI
- ├── CLI
- └── exportaciones JSON / CSV / TXT
+  |-- React UI
+  |-- CLI
+  `-- exportaciones TXT, CSV y JSON
 ```
 
-## Módulos relevantes
+## Capas
 
-### `src/lib/analyze.ts`
-Orquesta las tres fases. La salida es un único `AnalyzeResult`, por lo que UI, CLI y pruebas consumen exactamente el mismo pipeline.
+### Orquestación
 
-### `src/semantic/declarationVisitor.ts`
-Hace una prepasada de declaraciones de clases y resuelve información necesaria para herencia, campos, métodos y firmas.
+`src/lib/analyze.ts` crea el lexer, llena el token stream, ejecuta `program()` y decide si la fase semántica puede comenzar. UI, CLI y pruebas consumen el mismo `AnalyzeResult`; ninguna interfaz posee una versión alternativa de las reglas.
 
-### `src/semantic/semanticVisitor.ts`
-Recorrido semántico principal. Resuelve símbolos, valida reglas, anota tipos y produce el árbol semántico.
+### Gramática
 
-### `src/semantic/scopes.ts`
-Implementa `ScopeManager`, responsable de crear entornos anidados, declarar/resolver símbolos y registrar referencias/capturas.
+`src/grammars/Compiscript.g4` es la fuente de verdad. `src/generated/` se produce con `npm run generate`. La gramática activa conserva los bloques con llaves exigidos por la gramática oficial y añade el tipo/literal `float` requerido por el enunciado semántico.
 
-### `src/semantic/typeSystem.ts`
-Centraliza reglas de asignabilidad, comparabilidad, operadores y promociones numéricas.
+### Prepasada de declaraciones
 
-### `src/semantic/diagnostics.ts`
-Define códigos estables, severidad y estructura serializable de los diagnósticos.
+`src/semantic/declarationVisitor.ts` construye un `ClassRegistry` con dos índices:
 
-### `src/ui/`
-Presenta editor, lexer/parser heredados del Laboratorio 1 y las nuevas vistas de diagnósticos, símbolos, ámbitos, métricas y árbol semántico.
+- `byContext`, para asociar cada nodo ANTLR con su clase exacta;
+- `byId`, para consultar una declaración sin confundir clases homónimas.
 
-## Invariantes
+Cada clase recibe un `classId` estable. El nombre visible se publica como símbolo en el ámbito correspondiente y se resuelve léxicamente. La prepasada crea esqueletos antes de enlazar padres y recolectar miembros, lo que permite referencias adelantadas e impide que una clase local se filtre al ámbito global.
 
-1. El lexer siempre puede ejecutarse de forma independiente.
-2. El parser solo opera después de tokenizar, pero conserva la recuperación de errores de ANTLR.
-3. La semántica solo corre cuando no existen errores léxicos/sintácticos.
-4. La UI no implementa reglas semánticas: solo representa `AnalyzeResult`.
-5. La CLI usa el mismo `analyzeInput()` que la UI.
-6. La tabla de símbolos es parte del resultado de la fase semántica, no un estado paralelo de la interfaz.
+### Recorrido semántico
 
-## Pruebas
+`src/semantic/semanticVisitor.ts` extiende `AbstractParseTreeVisitor` e implementa el Visitor generado. El análisis se organiza en dos pasos por ámbito:
 
-La batería semántica se encuentra en:
+1. hoisting de clases y funciones;
+2. recorrido de instrucciones y expresiones.
 
-```text
-src/__tests__/semantic/semanticAnalyzer.test.ts
-```
+Los nodos de expresión devuelven tipo, nodo semántico y metadatos de asignación o invocación. Así se evita construir un segundo parser y se conserva la ubicación original de ANTLR.
 
-Incluye programas válidos, cobertura de `SEM001` a `SEM021` y regresiones específicas para campos/métodos, `for`, constantes de clase, ámbitos y determinismo de diagnósticos.
+Los campos de una clase se analizan antes que sus métodos, aunque aparezcan después en el archivo. Con ello, un método puede usar el tipo inferido de cualquier campo sin depender del orden textual. Los resultados vuelven a ordenarse para que el árbol presentado respete el programa fuente.
+
+### Tipos
+
+`semanticTypes.ts` define la representación algebraica de tipos y `typeSystem.ts` centraliza igualdad, asignabilidad, promoción numérica, comparabilidad y resultados de operadores. Las instancias llevan `classId`; por ello dos clases homónimas de bloques distintos no son intercambiables.
+
+Una función sin anotación comienza con retorno `unknown`. Sus instrucciones `return` alimentan `observedReturnTypes` y, al finalizar el cuerpo, se infiere un tipo común. El símbolo y la firma de método se actualizan de forma controlada.
+
+### Tabla de símbolos
+
+`src/semantic/scopes.ts` encapsula los ámbitos y garantiza estas invariantes:
+
+- `declare` solo inserta en el ámbito activo;
+- `resolveCurrent` no cruza el límite del ámbito;
+- `resolve` recorre padres hasta el global;
+- `updateSymbol` modifica datos permitidos sin cambiar identidad, nombre, ámbito o ubicación de declaración;
+- `enterScope` y `exitScope` conservan el árbol de entornos;
+- `markInitialized` y `markCaptured` reutilizan la actualización controlada.
+
+Las referencias a variables, clases, campos y métodos incrementan el contador del símbolo real. Una captura se registra cuando una función usa un símbolo declarado en una función externa.
+
+### Flujo y diagnósticos
+
+`flowAnalysis.ts` reconoce terminaciones directas y retornos en todos los caminos relevantes. `diagnostics.ts` produce mensajes serializables con código, severidad y posición. Los IDs se reinician por ejecución y los diagnósticos equivalentes se deduplican.
+
+### Presentación
+
+`src/ui/App.tsx` separa lexer, parser y semántica. La fase semántica utiliza:
+
+- `CompilerGuide`, que explica el flujo y los atajos;
+- `InputEditor`, con carga, copia, posición y análisis por teclado;
+- `SemanticResultExplorer`, que organiza resumen, diagnósticos, símbolos, ámbitos y árboles;
+- paneles especializados que solo renderizan `AnalyzeResult`.
+
+La interfaz no decide si un programa es válido. Su responsabilidad es explicar resultados ya calculados por el motor.
+
+## Invariantes del sistema
+
+1. El lexer puede ejecutarse de forma independiente.
+2. La semántica no corre si lexer o parser tienen errores.
+3. Los archivos generados por ANTLR no se editan manualmente.
+4. Toda declaración de clase tiene identidad independiente de su nombre.
+5. La resolución de nombres siempre parte del ámbito activo.
+6. UI y CLI ejecutan el mismo pipeline.
+7. Los resultados de una corrida no contaminan la siguiente.
+
+## Estrategia de pruebas
+
+`src/__tests__/semantic/semanticAnalyzer.test.ts` contiene programas de éxito, un caso por diagnóstico y regresiones de flujo, clases, funciones y arreglos. `scopeManager.test.ts` prueba de forma directa inserción, recuperación, actualización y manejo de alcances, que son operaciones explícitas de la rúbrica.
+
+Las suites adicionales verifican el pipeline general, los archivos de ejemplo y los casos de rúbrica. La cantidad final se registra en `AUDITORIA_PROYECTO_1.md` después de ejecutar Vitest.
+
+## Extensión futura
+
+La separación entre tipos, símbolos, flujo y presentación permite añadir una representación intermedia o intérprete sin mover reglas a la UI. La tabla ya conserva información útil para fases posteriores: tipo, categoría, mutabilidad, inicialización, firma, referencias y captura.

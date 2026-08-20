@@ -12,6 +12,7 @@
     "preview": "vite preview --host 0.0.0.0 --port 3000",
     "check": "tsc --noEmit",
     "test": "vitest run",
+    "test:examples": "vitest run src/__tests__/semantic/projectExamples.test.ts",
     "test:watch": "vitest",
     "cli": "tsx src/cli/run.ts",
     "cli:valid": "tsx src/cli/run.ts examples/compiscript/valid.cps --mode parser",
@@ -21,7 +22,8 @@
     "exe:portable": "npm run build && electron-builder --win portable --x64",
     "exe:installer": "npm run build && electron-builder --win nsis --x64",
     "cli:semantic-valid": "tsx src/cli/run.ts examples/semantic/valid_complete.cps --mode semantic",
-    "cli:semantic-errors": "tsx src/cli/run.ts examples/semantic/semantic_errors.cps --mode semantic"
+    "cli:semantic-errors": "tsx src/cli/run.ts examples/semantic/semantic_errors.cps --mode semantic",
+    "cli:semantic-symbols": "tsx src/cli/run.ts examples/semantic/symbol_table_demo.cps --mode semantic"
   },
   "build": {
     "appId": "gt.edu.uvg.dlpantlr",

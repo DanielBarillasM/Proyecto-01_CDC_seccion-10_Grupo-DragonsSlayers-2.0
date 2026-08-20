@@ -80,6 +80,8 @@ Las funciones y clases se registran antes de visitar las instrucciones de su ám
 
 Variables y constantes no se hoistean.
 
+Las clases se hoistean únicamente dentro del entorno que contiene su declaración. No existe un mapa global por nombre: cada declaración obtiene un identificador interno y el nombre se resuelve mediante la tabla de símbolos. Por ello una clase local deja de ser visible al salir del bloque y dos bloques hermanos pueden declarar clases homónimas.
+
 ## 9. Closures
 
 Cuando una función anidada referencia una variable declarada en el ámbito de una función externa, el símbolo se marca con `captured: true`. La tabla de símbolos y las métricas de la UI permiten observar estas capturas.
@@ -93,6 +95,8 @@ La fase de declaraciones construye información de clases, herencia, campos y m�
 - los campos `const` no pueden reasignarse;
 - las llamadas a métodos y constructores validan cantidad y tipos de argumentos cuando existe una firma conocida;
 - se detecta herencia inválida/circular.
+
+Los tipos de instancia incluyen la identidad de la declaración de clase, no solo su texto. Los campos se infieren antes de validar los métodos, incluso si un campo está escrito después del método que lo usa. Las referencias a clases, campos y métodos incrementan el contador del símbolo correspondiente.
 
 ## 11. Arreglos
 
@@ -114,7 +118,19 @@ Una clase sin método `constructor` explícito se interpreta con un constructor 
 
 Los diagnósticos semánticos usan códigos estables `SEM001` a `SEM023`. `SEM022` se conserva reservado para compatibilidad con la versión recibida de V0 y `SEM023` identifica el uso de una variable declarada antes de inicializarse. Los IDs internos (`sem-diag-N`) se reinician en cada ejecución para que los resultados y pruebas sean deterministas.
 
-## 16. Fuente de verdad
+## 16. Funciones sin tipo de retorno
+
+Una función o método sin anotación no se considera automáticamente `void`. Durante el análisis se recopilan los tipos observados en sus instrucciones `return` y se calcula un tipo común. Si no retorna ningún valor, el resultado es `void`; si los caminos producen tipos incompatibles, se conserva `unknown` y los usos posteriores no inventan una compatibilidad inexistente.
+
+## 17. Bloques de control
+
+Aunque algunos fragmentos del README oficial omiten llaves, la gramática ANTLR entregada define `block` para los cuerpos de `if`, `while`, `do-while`, `for` y `foreach`. La gramática activa sigue esa fuente formal, por lo que estos cuerpos requieren `{ ... }`.
+
+## 18. Actualización de símbolos
+
+Las modificaciones posteriores a una declaración se realizan mediante `ScopeManager.updateSymbol`. Esta operación mantiene invariantes de identidad: no permite reemplazar el ID, nombre, ámbito ni posición declarada. Inicialización, captura, tipo inferido, firma y referencias pueden actualizarse sin reconstruir el símbolo.
+
+## 19. Fuente de verdad
 
 La gramática activa del proyecto está en:
 

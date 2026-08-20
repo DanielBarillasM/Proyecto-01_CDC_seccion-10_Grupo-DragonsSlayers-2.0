@@ -25,6 +25,11 @@ export type DeclareResult =
   | { ok: true; symbol: SymbolEntry }
   | { ok: false; existing: SymbolEntry };
 
+export type SymbolUpdate = Partial<Pick<
+  SymbolEntry,
+  "type" | "mutable" | "initialized" | "parameters" | "returnType" | "members" | "parentClass" | "captured"
+>>;
+
 export class ScopeManager {
   readonly scopes = new Map<string, ScopeInfo>();
   readonly symbols = new Map<string, SymbolEntry>();
@@ -195,14 +200,22 @@ export class ScopeManager {
     if (symbol) symbol.references.push(location);
   }
 
-  markInitialized(symbolId: string): void {
+  /** Actualiza de forma controlada la información mutable de un símbolo.
+   * Su identidad, nombre, ámbito y ubicación de declaración permanecen
+   * invariantes durante toda la fase semántica. */
+  updateSymbol(symbolId: string, changes: SymbolUpdate): SymbolEntry | undefined {
     const symbol = this.symbols.get(symbolId);
-    if (symbol) symbol.initialized = true;
+    if (!symbol) return undefined;
+    Object.assign(symbol, changes);
+    return symbol;
+  }
+
+  markInitialized(symbolId: string): void {
+    this.updateSymbol(symbolId, { initialized: true });
   }
 
   markCaptured(symbolId: string): void {
-    const symbol = this.symbols.get(symbolId);
-    if (symbol) symbol.captured = true;
+    this.updateSymbol(symbolId, { captured: true });
   }
 
   allScopes(): ScopeInfo[] {

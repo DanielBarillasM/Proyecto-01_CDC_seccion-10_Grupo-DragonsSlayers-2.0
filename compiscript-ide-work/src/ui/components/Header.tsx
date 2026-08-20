@@ -1,41 +1,39 @@
-import { BrainCircuit, Code2, Cpu, Database, FileCode2, GitBranch } from "lucide-react";
+import { Braces, Code2, Database, GitBranch, GraduationCap, ShieldCheck } from "lucide-react";
 
-const badges = [
-  { label: "Compiscript", color: "badge-purple" },
-  { label: "ANTLR 4", color: "badge-cyan" },
-  { label: "Análisis semántico", color: "badge-green" },
-  { label: "Tabla de símbolos", color: "badge-yellow" }
+const capabilities = [
+  { label: "ANTLR 4", icon: <Braces size={14} /> },
+  { label: "TypeScript", icon: <Code2 size={14} /> },
+  { label: "Tabla de símbolos", icon: <Database size={14} /> },
+  { label: "Ámbitos léxicos", icon: <GitBranch size={14} /> }
 ];
 
 export function Header() {
   return (
-    <header className="hero">
+    <header className="hero hero-refined">
+      <div className="hero-brand-mark" aria-hidden="true">
+        <span>CS</span>
+      </div>
+
       <div className="hero-content">
-        <p className="eyebrow">
-          <Cpu size={14} /> Construcción de Compiladores · Proyecto 1
-        </p>
-        <h1>Compiscript Semantic IDE</h1>
+        <p className="eyebrow"><GraduationCap size={15} /> Construcción de Compiladores · Proyecto 1</p>
+        <h1>Compiscript <span>Semantic IDE</span></h1>
         <p className="subtitle">
-          IDE académico para analizar archivos .cps mediante un pipeline real de ANTLR:
-          análisis léxico, sintáctico y semántico, con sistema de tipos, ámbitos, tabla de
-          símbolos, diagnósticos y árboles de compilación.
+          Un laboratorio visual para recorrer el código fuente desde los tokens hasta los tipos,
+          símbolos y ámbitos que le dan significado.
         </p>
-        <div className="badge-row">
-          {badges.map((badge) => (
-            <span key={badge.label} className={`badge ${badge.color}`}>{badge.label}</span>
+        <div className="hero-capability-row">
+          {capabilities.map((item) => (
+            <span key={item.label}>{item.icon}{item.label}</span>
           ))}
         </div>
       </div>
 
-      <div className="hero-card">
-        <div className="hero-card-icon"><FileCode2 size={40} /></div>
-        <strong>Pipeline de compilación</strong>
-        <span>La fase semántica solo se ejecuta si el lexer y el parser producen un programa estructuralmente válido.</span>
-        <div className="hero-card-features">
-          <div className="feature-chip"><Code2 size={12} /> Lexer + parser ANTLR</div>
-          <div className="feature-chip"><BrainCircuit size={12} /> Reglas semánticas</div>
-          <div className="feature-chip"><Database size={12} /> Tabla de símbolos</div>
-          <div className="feature-chip"><GitBranch size={12} /> Ámbitos y árboles</div>
+      <div className="hero-status-card">
+        <span className="hero-status-icon"><ShieldCheck size={20} /></span>
+        <div>
+          <small>Motor activo</small>
+          <strong>Pipeline de tres fases</strong>
+          <p>Lexer, parser y visitor semántico conectados al mismo resultado verificable.</p>
         </div>
       </div>
     </header>

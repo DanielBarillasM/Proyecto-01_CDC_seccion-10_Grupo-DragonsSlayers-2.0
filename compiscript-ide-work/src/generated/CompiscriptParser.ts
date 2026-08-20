@@ -660,6 +660,7 @@ export class CompiscriptParser extends Parser {
 	public ifStatement(): IfStatementContext {
 		let _localctx: IfStatementContext = new IfStatementContext(this._ctx, this.state);
 		this.enterRule(_localctx, 18, CompiscriptParser.RULE_ifStatement);
+		let _la: number;
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
@@ -672,19 +673,19 @@ export class CompiscriptParser extends Parser {
 			this.state = 165;
 			this.match(CompiscriptParser.RPAREN);
 			this.state = 166;
-			this.statement();
+			this.block();
 			this.state = 169;
 			this._errHandler.sync(this);
-			switch ( this.interpreter.adaptivePredict(this._input, 6, this._ctx) ) {
-			case 1:
+			_la = this._input.LA(1);
+			if (_la === CompiscriptParser.ELSE) {
 				{
 				this.state = 167;
 				this.match(CompiscriptParser.ELSE);
 				this.state = 168;
-				this.statement();
+				this.block();
 				}
-				break;
 			}
+
 			}
 		}
 		catch (re) {
@@ -717,7 +718,7 @@ export class CompiscriptParser extends Parser {
 			this.state = 174;
 			this.match(CompiscriptParser.RPAREN);
 			this.state = 175;
-			this.statement();
+			this.block();
 			}
 		}
 		catch (re) {
@@ -744,7 +745,7 @@ export class CompiscriptParser extends Parser {
 			this.state = 177;
 			this.match(CompiscriptParser.DO);
 			this.state = 178;
-			this.statement();
+			this.block();
 			this.state = 179;
 			this.match(CompiscriptParser.WHILE);
 			this.state = 180;
@@ -820,7 +821,7 @@ export class CompiscriptParser extends Parser {
 			this.state = 198;
 			this.match(CompiscriptParser.RPAREN);
 			this.state = 199;
-			this.statement();
+			this.block();
 			}
 		}
 		catch (re) {
@@ -943,7 +944,7 @@ export class CompiscriptParser extends Parser {
 			this.state = 217;
 			this.match(CompiscriptParser.RPAREN);
 			this.state = 218;
-			this.statement();
+			this.block();
 			}
 		}
 		catch (re) {
@@ -2514,26 +2515,26 @@ export class CompiscriptParser extends Parser {
 		"\x9D\x074\x02\x02\x9D\x11\x03\x02\x02\x02\x9E\x9F\x07\b\x02\x02\x9F\xA0" +
 		"\x075\x02\x02\xA0\xA1\x058\x1D\x02\xA1\xA2\x076\x02\x02\xA2\xA3\x074\x02" +
 		"\x02\xA3\x13\x03\x02\x02\x02\xA4\xA5\x07\t\x02\x02\xA5\xA6\x075\x02\x02" +
-		"\xA6\xA7\x058\x1D\x02\xA7\xA8\x076\x02\x02\xA8\xAB\x05\x04\x03\x02\xA9" +
-		"\xAA\x07\n\x02\x02\xAA\xAC\x05\x04\x03\x02\xAB\xA9\x03\x02\x02\x02\xAB" +
+		"\xA6\xA7\x058\x1D\x02\xA7\xA8\x076\x02\x02\xA8\xAB\x05\x06\x04\x02\xA9" +
+		"\xAA\x07\n\x02\x02\xAA\xAC\x05\x06\x04\x02\xAB\xA9\x03\x02\x02\x02\xAB" +
 		"\xAC\x03\x02\x02\x02\xAC\x15\x03\x02\x02\x02\xAD\xAE\x07\v\x02\x02\xAE" +
 		"\xAF\x075\x02\x02\xAF\xB0\x058\x1D\x02\xB0\xB1\x076\x02\x02\xB1\xB2\x05" +
-		"\x04\x03\x02\xB2\x17\x03\x02\x02\x02\xB3\xB4\x07\f\x02\x02\xB4\xB5\x05" +
-		"\x04\x03\x02\xB5\xB6\x07\v\x02\x02\xB6\xB7\x075\x02\x02\xB7\xB8\x058\x1D" +
+		"\x06\x04\x02\xB2\x17\x03\x02\x02\x02\xB3\xB4\x07\f\x02\x02\xB4\xB5\x05" +
+		"\x06\x04\x02\xB5\xB6\x07\v\x02\x02\xB6\xB7\x075\x02\x02\xB7\xB8\x058\x1D" +
 		"\x02\xB8\xB9\x076\x02\x02\xB9\xBA\x074\x02\x02\xBA\x19\x03\x02\x02\x02" +
 		"\xBB\xBC\x07\r\x02\x02\xBC\xBE\x075\x02\x02\xBD\xBF\x05\x1C\x0F\x02\xBE" +
 		"\xBD\x03\x02\x02\x02\xBE\xBF\x03\x02\x02\x02\xBF\xC0\x03\x02\x02\x02\xC0" +
 		"\xC2\x074\x02\x02\xC1\xC3\x058\x1D\x02\xC2\xC1\x03\x02\x02\x02\xC2\xC3" +
 		"\x03\x02\x02\x02\xC3\xC4\x03\x02\x02\x02\xC4\xC6\x074\x02\x02\xC5\xC7" +
 		"\x058\x1D\x02\xC6\xC5\x03\x02\x02\x02\xC6\xC7\x03\x02\x02\x02\xC7\xC8" +
-		"\x03\x02\x02\x02\xC8\xC9\x076\x02\x02\xC9\xCA\x05\x04\x03\x02\xCA\x1B" +
+		"\x03\x02\x02\x02\xC8\xC9\x076\x02\x02\xC9\xCA\x05\x06\x04\x02\xCA\x1B" +
 		"\x03\x02\x02\x02\xCB\xCC\t\x02\x02\x02\xCC\xCE\x07>\x02\x02\xCD\xCF\x05" +
 		"\f\x07\x02\xCE\xCD\x03\x02\x02\x02\xCE\xCF\x03\x02\x02\x02\xCF\xD1\x03" +
 		"\x02\x02\x02\xD0\xD2\x05\x0E\b\x02\xD1\xD0\x03\x02\x02\x02\xD1\xD2\x03" +
 		"\x02\x02\x02\xD2\xD5\x03\x02\x02\x02\xD3\xD5\x058\x1D\x02\xD4\xCB\x03" +
 		"\x02\x02\x02\xD4\xD3\x03\x02\x02\x02\xD5\x1D\x03\x02\x02\x02\xD6\xD7\x07" +
 		"\x0E\x02\x02\xD7\xD8\x075\x02\x02\xD8\xD9\x07>\x02\x02\xD9\xDA\x07\x0F" +
-		"\x02\x02\xDA\xDB\x058\x1D\x02\xDB\xDC\x076\x02\x02\xDC\xDD\x05\x04\x03" +
+		"\x02\x02\xDA\xDB\x058\x1D\x02\xDB\xDC\x076\x02\x02\xDC\xDD\x05\x06\x04" +
 		"\x02\xDD\x1F\x03\x02\x02\x02\xDE\xDF\x07\x10\x02\x02\xDF\xE0\x074\x02" +
 		"\x02\xE0!\x03\x02\x02\x02\xE1\xE2\x07\x11\x02\x02\xE2\xE3\x074\x02\x02" +
 		"\xE3#\x03\x02\x02\x02\xE4\xE6\x07\x12\x02\x02\xE5\xE7\x058\x1D\x02\xE6" +
@@ -3033,13 +3034,13 @@ export class IfStatementContext extends ParserRuleContext {
 		return this.getRuleContext(0, ExpressionContext);
 	}
 	public RPAREN(): TerminalNode { return this.getToken(CompiscriptParser.RPAREN, 0); }
-	public statement(): StatementContext[];
-	public statement(i: number): StatementContext;
-	public statement(i?: number): StatementContext | StatementContext[] {
+	public block(): BlockContext[];
+	public block(i: number): BlockContext;
+	public block(i?: number): BlockContext | BlockContext[] {
 		if (i === undefined) {
-			return this.getRuleContexts(StatementContext);
+			return this.getRuleContexts(BlockContext);
 		} else {
-			return this.getRuleContext(i, StatementContext);
+			return this.getRuleContext(i, BlockContext);
 		}
 	}
 	public ELSE(): TerminalNode | undefined { return this.tryGetToken(CompiscriptParser.ELSE, 0); }
@@ -3078,8 +3079,8 @@ export class WhileStatementContext extends ParserRuleContext {
 		return this.getRuleContext(0, ExpressionContext);
 	}
 	public RPAREN(): TerminalNode { return this.getToken(CompiscriptParser.RPAREN, 0); }
-	public statement(): StatementContext {
-		return this.getRuleContext(0, StatementContext);
+	public block(): BlockContext {
+		return this.getRuleContext(0, BlockContext);
 	}
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
@@ -3111,8 +3112,8 @@ export class WhileStatementContext extends ParserRuleContext {
 
 export class DoWhileStatementContext extends ParserRuleContext {
 	public DO(): TerminalNode { return this.getToken(CompiscriptParser.DO, 0); }
-	public statement(): StatementContext {
-		return this.getRuleContext(0, StatementContext);
+	public block(): BlockContext {
+		return this.getRuleContext(0, BlockContext);
 	}
 	public WHILE(): TerminalNode { return this.getToken(CompiscriptParser.WHILE, 0); }
 	public LPAREN(): TerminalNode { return this.getToken(CompiscriptParser.LPAREN, 0); }
@@ -3162,8 +3163,8 @@ export class ForStatementContext extends ParserRuleContext {
 		}
 	}
 	public RPAREN(): TerminalNode { return this.getToken(CompiscriptParser.RPAREN, 0); }
-	public statement(): StatementContext {
-		return this.getRuleContext(0, StatementContext);
+	public block(): BlockContext {
+		return this.getRuleContext(0, BlockContext);
 	}
 	public forInitializer(): ForInitializerContext | undefined {
 		return this.tryGetRuleContext(0, ForInitializerContext);
@@ -3255,8 +3256,8 @@ export class ForeachStatementContext extends ParserRuleContext {
 		return this.getRuleContext(0, ExpressionContext);
 	}
 	public RPAREN(): TerminalNode { return this.getToken(CompiscriptParser.RPAREN, 0); }
-	public statement(): StatementContext {
-		return this.getRuleContext(0, StatementContext);
+	public block(): BlockContext {
+		return this.getRuleContext(0, BlockContext);
 	}
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);

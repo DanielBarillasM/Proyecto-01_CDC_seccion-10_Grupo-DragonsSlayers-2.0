@@ -464,3 +464,63 @@ describe("Análisis semántico — cobertura explícita de requisitos", () => {
     expect(kinds).toContain("catch");
   });
 });
+
+describe("Análisis semántico — ámbitos de clases e inferencia", () => {
+  it("mantiene la exigencia oficial de bloques en estructuras de control", () => {
+    const result = analyze(`if (true) print(1);`);
+    expect(result.syntaxErrors.length).toBeGreaterThan(0);
+    expect(result.semantic.status).toBe("skipped");
+  });
+
+  it("impide usar fuera del bloque una clase local", () => {
+    const result = analyze(`
+      { class Local { } }
+      let dato: Local = new Local();
+    `);
+    expect(result.semantic.diagnostics.map((diagnostic) => diagnostic.code)).toContain("SEM001");
+  });
+
+  it("permite clases homónimas en ámbitos hermanos", () => {
+    const result = analyze(`
+      { class Nodo { let valor: integer = 1; } let a: Nodo = new Nodo(); }
+      { class Nodo { let valor: string = "dos"; } let b: Nodo = new Nodo(); }
+    `);
+    expect(result.semantic.errors).toHaveLength(0);
+    expect(result.semantic.symbols.filter((symbol) => symbol.name === "Nodo")).toHaveLength(2);
+  });
+
+  it("infiere campos antes de validar métodos aunque estén declarados después", () => {
+    expect(codesOf(`
+      class A {
+        function valor(): integer { return this.texto; }
+        let texto = "cadena";
+      }
+    `)).toContain("SEM008");
+  });
+
+  it("infiere el retorno de funciones sin anotación", () => {
+    const result = analyze(`
+      function uno() { return 1; }
+      let valor: integer = uno();
+    `);
+    expect(result.semantic.errors).toHaveLength(0);
+    expect(result.semantic.symbols.find((symbol) => symbol.name === "uno")?.returnType).toEqual({
+      kind: "primitive",
+      name: "integer"
+    });
+  });
+
+  it("registra referencias de clases, campos y métodos", () => {
+    const result = analyze(`
+      class A {
+        let x: integer = 1;
+        function obtener(): integer { return this.x; }
+      }
+      let a: A = new A();
+      print(a.obtener());
+    `);
+    for (const name of ["A", "x", "obtener"]) {
+      expect(result.semantic.symbols.find((symbol) => symbol.name === name)?.references.length).toBeGreaterThan(0);
+    }
+  });
+});

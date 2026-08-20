@@ -1,4 +1,4 @@
-import { Download, Keyboard, Play, RotateCcw, Upload } from "lucide-react";
+import { Check, Clipboard, Download, FileCheck2, Keyboard, Play, RotateCcw, Upload } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import type { ChangeEvent, KeyboardEvent, UIEvent } from "react";
 import { downloadText } from "../../lib/downloads";
@@ -27,6 +27,7 @@ export function InputEditor({
   const [fileName, setFileName] = useState<string | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
   const [cursor, setCursor] = useState({ line: 1, column: 1 });
+  const [copied, setCopied] = useState(false);
   const lineCount = value.split("\n").length;
   const isEmpty = value.trim().length === 0;
   const lineNumbers = useMemo(
@@ -87,10 +88,18 @@ export function InputEditor({
     }
   }
 
+  async function handleCopy() {
+    if (isEmpty) return;
+    await navigator.clipboard.writeText(value);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1400);
+  }
+
   return (
     <div className="input-editor">
       <div className="editor-header">
         <div>
+          <span className="editor-file-icon"><FileCheck2 size={15} /></span>
           <span className="editor-title">{fileName ?? "program.cps"}</span>
           <span className="editor-language">Compiscript</span>
         </div>
@@ -152,12 +161,21 @@ export function InputEditor({
         >
           <Download size={16} /> Descargar
         </button>
+        <button className="btn-secondary" onClick={handleCopy} disabled={isEmpty}>
+          {copied ? <Check size={16} /> : <Clipboard size={16} />}
+          {copied ? "Copiado" : "Copiar"}
+        </button>
         <button className="btn-ghost" onClick={handleClear}>
           <RotateCcw size={16} /> Restablecer
         </button>
         <span className="editor-shortcut" title="Atajo para ejecutar el análisis">
           <Keyboard size={14} /> Ctrl + Enter
         </span>
+      </div>
+      <div className={`editor-readiness ${isEmpty ? "editor-readiness-empty" : "editor-readiness-ready"}`}>
+        <span className="readiness-dot" />
+        <strong>{isEmpty ? "Esperando código" : "Entrada lista"}</strong>
+        <span>{isEmpty ? "Carga un archivo o selecciona un caso de ejemplo." : "El análisis se ejecuta localmente y no modifica el archivo original."}</span>
       </div>
     </div>
   );

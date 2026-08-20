@@ -35,12 +35,16 @@ export interface ArraySemanticType {
 export interface ClassSemanticType {
   kind: "class";
   name: string;
+  /** Identificador interno de la declaración. Permite clases homónimas en
+   * ámbitos distintos sin confundir sus instancias. */
+  classId: string;
 }
 
 /** Tipo de una instancia de una clase declarada, p. ej. `let p: Perro`. */
 export interface InstanceSemanticType {
   kind: "instance";
   className: string;
+  classId: string;
 }
 
 export interface FunctionSemanticType {
@@ -74,11 +78,11 @@ export const T = {
   array(element: SemanticType): ArraySemanticType {
     return { kind: "array", element };
   },
-  classType(name: string): ClassSemanticType {
-    return { kind: "class", name };
+  classType(name: string, classId = name): ClassSemanticType {
+    return { kind: "class", name, classId };
   },
-  instance(className: string): InstanceSemanticType {
-    return { kind: "instance", className };
+  instance(className: string, classId = className): InstanceSemanticType {
+    return { kind: "instance", className, classId };
   },
   fn(params: SemanticType[], returnType: SemanticType): FunctionSemanticType {
     return { kind: "function", params, returnType };
@@ -148,9 +152,9 @@ export function typesEqual(a: SemanticType, b: SemanticType): boolean {
     case "array":
       return typesEqual(a.element, (b as ArraySemanticType).element);
     case "class":
-      return a.name === (b as ClassSemanticType).name;
+      return a.classId === (b as ClassSemanticType).classId;
     case "instance":
-      return a.className === (b as InstanceSemanticType).className;
+      return a.classId === (b as InstanceSemanticType).classId;
     case "function": {
       const other = b as FunctionSemanticType;
       if (a.params.length !== other.params.length) return false;

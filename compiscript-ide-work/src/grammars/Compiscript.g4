@@ -57,19 +57,19 @@ printStatement
     ;
 
 ifStatement
-    : IF LPAREN expression RPAREN statement (ELSE statement)?
+    : IF LPAREN expression RPAREN block (ELSE block)?
     ;
 
 whileStatement
-    : WHILE LPAREN expression RPAREN statement
+    : WHILE LPAREN expression RPAREN block
     ;
 
 doWhileStatement
-    : DO statement WHILE LPAREN expression RPAREN SEMI
+    : DO block WHILE LPAREN expression RPAREN SEMI
     ;
 
 forStatement
-    : FOR LPAREN forInitializer? SEMI expression? SEMI expression? RPAREN statement
+    : FOR LPAREN forInitializer? SEMI expression? SEMI expression? RPAREN block
     ;
 
 forInitializer
@@ -78,7 +78,7 @@ forInitializer
     ;
 
 foreachStatement
-    : FOREACH LPAREN Identifier IN expression RPAREN statement
+    : FOREACH LPAREN Identifier IN expression RPAREN block
     ;
 
 breakStatement

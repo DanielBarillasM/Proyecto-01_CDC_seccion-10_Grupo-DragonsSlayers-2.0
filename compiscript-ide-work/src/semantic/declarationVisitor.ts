@@ -1,19 +1,11 @@
 // ============================================================
-// FASE DE DECLARACIÓN — Recolección de clases y resolución de tipos
+// PREPASADA DE CLASES Y RESOLUCIÓN DE TIPOS
 // ============================================================
 //
-// Antes de recorrer los cuerpos de funciones y métodos, se necesita conocer
-// TODAS las clases del programa (con su jerarquía de herencia, campos y
-// métodos) para poder resolver referencias adelantadas: una clase puede
-// usarse como tipo antes de su declaración textual, y un método puede
-// invocar a otro declarado más abajo en el mismo cuerpo de clase.
-//
-// Decisión documentada (ver docs/DECISIONES_SEMANTICAS.md, sección "Espacio
-// de nombres de clases"): las clases se resuelven en un registro único para
-// todo el programa, independientemente del bloque léxico en el que
-// aparezcan. Esto simplifica la resolución de tipos y la herencia sin
-// afectar los ejemplos del lenguaje, donde las clases se declaran a nivel
-// de programa.
+// Esta fase crea un esqueleto por cada declaración de clase. Los nombres no
+// se guardan en un mapa global: el visitor principal los vincula después con
+// símbolos del ScopeManager. Así, una clase respeta el bloque donde fue
+// declarada y dos ámbitos distintos pueden contener clases homónimas.
 
 import { ParserRuleContext } from "antlr4ts";
 import {
@@ -21,7 +13,6 @@ import {
   type ClassMemberContext,
   type FunctionDeclarationContext,
   type ProgramContext,
-  type StatementContext,
   type TypeContext
 } from "../generated/CompiscriptParser";
 import { createDiagnostic, type SemanticDiagnostic } from "./diagnostics";
@@ -33,6 +24,7 @@ export interface FieldInfo {
   type: SemanticType;
   mutable: boolean;
   declaration: SourceLocation;
+  symbolId?: string;
 }
 
 export interface MethodInfo {
@@ -41,81 +33,87 @@ export interface MethodInfo {
   returnType: SemanticType;
   declaration: SourceLocation;
   ctx: FunctionDeclarationContext;
+  symbolId?: string;
 }
 
 export interface ClassInfo {
+  id: string;
   name: string;
   parentName: string | null;
   declaration: SourceLocation;
   ctx: ClassDeclarationContext;
   fields: Map<string, FieldInfo>;
   methods: Map<string, MethodInfo>;
-  /** Se llena tras validar que la cadena de herencia no es circular. */
   parent: ClassInfo | null;
+  symbolId?: string;
+  membersCollected: boolean;
 }
+
+export interface ClassRegistry {
+  byId: Map<string, ClassInfo>;
+  byContext: Map<ClassDeclarationContext, ClassInfo>;
+}
+
+export type ClassResolver = (name: string) => ClassInfo | undefined;
 
 export function locOf(ctx: ParserRuleContext): SourceLocation {
   const symbol = ctx.start;
   return { line: symbol.line, column: symbol.charPositionInLine + 1 };
 }
 
-/** ¿`child` es la misma clase que `ancestor` o hereda de ella (transitivamente)? */
 export function isSubclassOf(
-  classInfoMap: Map<string, ClassInfo>,
-  child: string,
-  ancestor: string
+  registry: Map<string, ClassInfo>,
+  childId: string,
+  ancestorId: string
 ): boolean {
-  let current: ClassInfo | undefined = classInfoMap.get(child);
+  let current = registry.get(childId);
   const seen = new Set<string>();
   while (current) {
-    if (current.name === ancestor) return true;
-    if (seen.has(current.name)) return false;
-    seen.add(current.name);
+    if (current.id === ancestorId) return true;
+    if (seen.has(current.id)) return false;
+    seen.add(current.id);
     current = current.parent ?? undefined;
   }
   return false;
 }
 
-/** Busca un campo en la clase o en cualquier ancestro. */
-export function lookupField(classInfoMap: Map<string, ClassInfo>, className: string, fieldName: string): FieldInfo | undefined {
-  let current: ClassInfo | undefined = classInfoMap.get(className);
+export function lookupField(
+  registry: Map<string, ClassInfo>,
+  classId: string,
+  fieldName: string
+): FieldInfo | undefined {
+  let current = registry.get(classId);
   const seen = new Set<string>();
   while (current) {
     const field = current.fields.get(fieldName);
     if (field) return field;
-    if (seen.has(current.name)) break;
-    seen.add(current.name);
+    if (seen.has(current.id)) break;
+    seen.add(current.id);
     current = current.parent ?? undefined;
   }
   return undefined;
 }
 
-/** Busca un método en la clase o en cualquier ancestro. */
-export function lookupMethod(classInfoMap: Map<string, ClassInfo>, className: string, methodName: string): MethodInfo | undefined {
-  let current: ClassInfo | undefined = classInfoMap.get(className);
+export function lookupMethod(
+  registry: Map<string, ClassInfo>,
+  classId: string,
+  methodName: string
+): MethodInfo | undefined {
+  let current = registry.get(classId);
   const seen = new Set<string>();
   while (current) {
     const method = current.methods.get(methodName);
     if (method) return method;
-    if (seen.has(current.name)) break;
-    seen.add(current.name);
+    if (seen.has(current.id)) break;
+    seen.add(current.id);
     current = current.parent ?? undefined;
   }
   return undefined;
 }
 
-/**
- * resolveType
- *
- * Convierte un `TypeContext` de la gramática en un `SemanticType`. Un
- * `Identifier` como tipo base se interpreta como una instancia de clase.
- * Si la clase no existe todavía en `classInfoMap` (porque no es un tipo de
- * clase válido), se reporta SEM001 y se devuelve `error` para evitar
- * cascadas posteriores.
- */
 export function resolveType(
   ctx: TypeContext,
-  classInfoMap: Map<string, ClassInfo>,
+  resolveClass: ClassResolver,
   diagnostics: SemanticDiagnostic[]
 ): SemanticType {
   const baseTypeCtx = ctx.baseType();
@@ -127,152 +125,120 @@ export function resolveType(
   else if (baseTypeCtx.STRING_TYPE()) base = T.string;
   else {
     const name = baseTypeCtx.Identifier()!.text;
-    if (classInfoMap.has(name)) {
-      base = T.instance(name);
+    const info = resolveClass(name);
+    if (info) {
+      base = T.instance(info.name, info.id);
     } else {
       diagnostics.push(
         createDiagnostic("SEM001", "error", locOf(baseTypeCtx), `El tipo '${name}' no está declarado como clase.`, {
           symbol: name,
-          hint: "Declara la clase antes de usarla como tipo, o corrige el nombre."
+          hint: "Declara la clase en este ámbito o corrige el nombre del tipo."
         })
       );
       base = T.error;
     }
   }
 
-  const dimensions = ctx.LBRACKET().length;
   let result: SemanticType = base;
-  for (let i = 0; i < dimensions; i++) result = T.array(result);
+  for (let i = 0; i < ctx.LBRACKET().length; i++) result = T.array(result);
   return result;
 }
 
 function walkForClassDeclarations(ctx: ParserRuleContext, out: ClassDeclarationContext[]): void {
   for (let i = 0; i < ctx.childCount; i++) {
     const child = ctx.getChild(i);
-    if (child instanceof ClassDeclarationContext) {
-      out.push(child);
-    }
-    if (child instanceof ParserRuleContext) {
-      walkForClassDeclarations(child, out);
-    }
+    if (child instanceof ClassDeclarationContext) out.push(child);
+    if (child instanceof ParserRuleContext) walkForClassDeclarations(child, out);
   }
 }
 
-/** Recorre TODO el árbol buscando declaraciones de clase, sin importar el
- * bloque en el que aparezcan (ver decisión documentada arriba). */
-function findAllClassDeclarations(program: ProgramContext): ClassDeclarationContext[] {
-  const out: ClassDeclarationContext[] = [];
-  walkForClassDeclarations(program, out);
-  return out;
-}
+/** Crea identidades estables para las clases sin resolver todavía su nombre.
+ * La resolución léxica se realiza cuando el ScopeManager conoce el bloque
+ * exacto de cada declaración. */
+export function collectClassInfo(program: ProgramContext): ClassRegistry {
+  const declarations: ClassDeclarationContext[] = [];
+  walkForClassDeclarations(program, declarations);
 
-function fieldTypeFromLiteral(): SemanticType {
-  // Los campos de clase en Compiscript normalmente se declaran sin
-  // inicializador (se asignan en el constructor mediante `this.x = ...`).
-  // Si un campo trae inicializador con una expresión no trivial, se marca
-  // `unknown` en esta fase; el visitor semántico validará la asignación en
-  // el constructor de todas formas.
-  return T.unknown;
-}
+  const byId = new Map<string, ClassInfo>();
+  const byContext = new Map<ClassDeclarationContext, ClassInfo>();
 
-/**
- * collectClassInfo
- *
- * Primera pasada real de la fase de declaración: registra todas las
- * clases del programa, resuelve su cadena de herencia (detectando ciclos,
- * SEM020) y calcula el tipo de cada campo y la firma de cada método.
- */
-export function collectClassInfo(
-  program: ProgramContext,
-  diagnostics: SemanticDiagnostic[]
-): Map<string, ClassInfo> {
-  const classInfoMap = new Map<string, ClassInfo>();
-  const declarations = findAllClassDeclarations(program);
-
-  // 1) Registrar nombres y detectar duplicados (SEM002).
-  for (const ctx of declarations) {
-    const ids = ctx.Identifier();
-    const name = ids[0].text;
-    const parentName = ctx.COLON() && ids.length > 1 ? ids[1].text : null;
-    const declaration = locOf(ctx);
-
-    if (classInfoMap.has(name)) {
-      const existing = classInfoMap.get(name)!;
-      diagnostics.push(
-        createDiagnostic("SEM002", "error", declaration, `La clase '${name}' ya fue declarada.`, {
-          symbol: name,
-          related: [{ message: "Declaración original de la clase.", line: existing.declaration.line, column: existing.declaration.column }]
-        })
-      );
-      continue;
-    }
-
-    classInfoMap.set(name, {
-      name,
-      parentName,
-      declaration,
+  declarations.forEach((ctx, index) => {
+    const identifiers = ctx.Identifier();
+    const info: ClassInfo = {
+      id: `class-${index}`,
+      name: identifiers[0].text,
+      parentName: ctx.COLON() && identifiers.length > 1 ? identifiers[1].text : null,
+      declaration: locOf(ctx),
       ctx,
       fields: new Map(),
       methods: new Map(),
-      parent: null
-    });
-  }
+      parent: null,
+      membersCollected: false
+    };
+    byId.set(info.id, info);
+    byContext.set(ctx, info);
+  });
 
-  // 2) Resolver punteros de herencia y detectar ciclos (SEM020).
-  for (const info of classInfoMap.values()) {
-    if (!info.parentName) continue;
-    const parent = classInfoMap.get(info.parentName);
-    if (!parent) {
-      diagnostics.push(
-        createDiagnostic(
-          "SEM020",
-          "error",
-          info.declaration,
-          `La clase '${info.name}' hereda de '${info.parentName}', que no está declarada.`,
-          { symbol: info.name }
-        )
-      );
-      continue;
-    }
-    info.parent = parent;
-  }
+  return { byId, byContext };
+}
 
-  for (const info of classInfoMap.values()) {
-    const seen = new Set<string>();
-    let current: ClassInfo | null = info;
-    let cyclic = false;
-    while (current) {
-      if (seen.has(current.name)) {
-        cyclic = true;
-        break;
-      }
-      seen.add(current.name);
-      current = current.parent;
-    }
-    if (cyclic) {
+export function linkParentClass(
+  info: ClassInfo,
+  resolveClass: ClassResolver,
+  diagnostics: SemanticDiagnostic[]
+): void {
+  if (!info.parentName) return;
+  const parent = resolveClass(info.parentName);
+  if (!parent) {
+    diagnostics.push(
+      createDiagnostic(
+        "SEM020",
+        "error",
+        info.declaration,
+        `La clase '${info.name}' hereda de '${info.parentName}', que no está declarada en este ámbito.`,
+        { symbol: info.name }
+      )
+    );
+    return;
+  }
+  info.parent = parent;
+}
+
+export function validateInheritanceCycle(info: ClassInfo, diagnostics: SemanticDiagnostic[]): void {
+  const seen = new Set<string>();
+  let current: ClassInfo | null = info;
+  while (current) {
+    if (seen.has(current.id)) {
       diagnostics.push(
         createDiagnostic("SEM020", "error", info.declaration, `La herencia de la clase '${info.name}' es circular.`, {
           symbol: info.name
         })
       );
       info.parent = null;
+      return;
     }
+    seen.add(current.id);
+    current = current.parent;
   }
+}
 
-  // 3) Resolver campos y métodos, ahora que todas las clases son conocidas.
-  for (const info of classInfoMap.values()) {
-    for (const member of info.ctx.classMember()) {
-      registerMember(member, info, classInfoMap, diagnostics);
-    }
+/** Registra firmas y campos antes de visitar cuerpos de métodos. */
+export function collectClassMembers(
+  info: ClassInfo,
+  resolveClass: ClassResolver,
+  diagnostics: SemanticDiagnostic[]
+): void {
+  if (info.membersCollected) return;
+  info.membersCollected = true;
+  for (const member of info.ctx.classMember()) {
+    registerMember(member, info, resolveClass, diagnostics);
   }
-
-  return classInfoMap;
 }
 
 function registerMember(
   member: ClassMemberContext,
   info: ClassInfo,
-  classInfoMap: Map<string, ClassInfo>,
+  resolveClass: ClassResolver,
   diagnostics: SemanticDiagnostic[]
 ): void {
   const fn = member.functionDeclaration();
@@ -280,64 +246,68 @@ function registerMember(
     const name = fn.Identifier().text;
     const declaration = locOf(fn);
     if (info.methods.has(name) || info.fields.has(name)) {
-      const existing = info.methods.get(name) ?? info.fields.get(name)!;
-      diagnostics.push(
-        createDiagnostic("SEM002", "error", declaration, `El método '${name}' ya fue declarado en la clase '${info.name}'.`, {
-          symbol: name,
-          related: [{ message: "Declaración original del método.", line: existing.declaration.line, column: existing.declaration.column }]
-        })
-      );
+      reportMemberCollision(info, name, declaration, diagnostics);
       return;
     }
-    const { params } = resolveParameters(fn, classInfoMap, diagnostics);
-    const returnType = fn.type() ? resolveType(fn.type()!, classInfoMap, diagnostics) : T.void;
+    const { params } = resolveParameters(fn, resolveClass, diagnostics);
+    const returnType = fn.type()
+      ? resolveType(fn.type()!, resolveClass, diagnostics)
+      : name === "constructor"
+        ? T.void
+        : T.unknown;
     info.methods.set(name, { name, params, returnType, declaration, ctx: fn });
     return;
   }
 
-  const varDecl = member.variableDeclaration();
-  if (varDecl) {
-    const name = varDecl.Identifier().text;
-    const declaration = locOf(varDecl);
+  const variable = member.variableDeclaration();
+  if (variable) {
+    const name = variable.Identifier().text;
+    const declaration = locOf(variable);
     if (info.fields.has(name) || info.methods.has(name)) {
-      const existing = info.fields.get(name) ?? info.methods.get(name)!;
-      diagnostics.push(
-        createDiagnostic("SEM002", "error", declaration, `El campo '${name}' ya fue declarado en la clase '${info.name}'.`, {
-          symbol: name,
-          related: [{ message: "Declaración original del campo.", line: existing.declaration.line, column: existing.declaration.column }]
-        })
-      );
+      reportMemberCollision(info, name, declaration, diagnostics);
       return;
     }
-    const typeAnnotation = varDecl.typeAnnotation();
-    const type = typeAnnotation ? resolveType(typeAnnotation.type(), classInfoMap, diagnostics) : fieldTypeFromLiteral();
+    const annotation = variable.typeAnnotation();
+    const type = annotation ? resolveType(annotation.type(), resolveClass, diagnostics) : T.unknown;
     info.fields.set(name, { name, type, mutable: true, declaration });
     return;
   }
 
-  const constDecl = member.constantDeclaration();
-  if (constDecl) {
-    const name = constDecl.Identifier().text;
-    const declaration = locOf(constDecl);
-    if (info.fields.has(name) || info.methods.has(name)) {
-      const existing = info.fields.get(name) ?? info.methods.get(name)!;
-      diagnostics.push(
-        createDiagnostic("SEM002", "error", declaration, `El campo '${name}' ya fue declarado en la clase '${info.name}'.`, {
-          symbol: name,
-          related: [{ message: "Declaración original del campo.", line: existing.declaration.line, column: existing.declaration.column }]
-        })
-      );
-      return;
-    }
-    const typeAnnotation = constDecl.typeAnnotation();
-    const type = typeAnnotation ? resolveType(typeAnnotation.type(), classInfoMap, diagnostics) : T.unknown;
-    info.fields.set(name, { name, type, mutable: false, declaration });
+  const constant = member.constantDeclaration();
+  if (!constant) return;
+  const name = constant.Identifier().text;
+  const declaration = locOf(constant);
+  if (info.fields.has(name) || info.methods.has(name)) {
+    reportMemberCollision(info, name, declaration, diagnostics);
+    return;
   }
+  const annotation = constant.typeAnnotation();
+  const type = annotation ? resolveType(annotation.type(), resolveClass, diagnostics) : T.unknown;
+  info.fields.set(name, { name, type, mutable: false, declaration });
+}
+
+function reportMemberCollision(
+  info: ClassInfo,
+  name: string,
+  declaration: SourceLocation,
+  diagnostics: SemanticDiagnostic[]
+): void {
+  const existing = info.fields.get(name) ?? info.methods.get(name)!;
+  diagnostics.push(
+    createDiagnostic("SEM002", "error", declaration, `El miembro '${name}' ya fue declarado en la clase '${info.name}'.`, {
+      symbol: name,
+      related: [{
+        message: "Declaración original del miembro.",
+        line: existing.declaration.line,
+        column: existing.declaration.column
+      }]
+    })
+  );
 }
 
 export function resolveParameters(
   fn: FunctionDeclarationContext,
-  classInfoMap: Map<string, ClassInfo>,
+  resolveClass: ClassResolver,
   diagnostics: SemanticDiagnostic[]
 ): { params: { name: string; type: SemanticType }[] } {
   const params: { name: string; type: SemanticType }[] = [];
@@ -347,8 +317,8 @@ export function resolveParameters(
 
   for (const param of parameterList.parameter()) {
     const name = param.Identifier().text;
-    const typeAnnotation = param.typeAnnotation();
-    const type = typeAnnotation ? resolveType(typeAnnotation.type(), classInfoMap, diagnostics) : T.unknown;
+    const annotation = param.typeAnnotation();
+    const type = annotation ? resolveType(annotation.type(), resolveClass, diagnostics) : T.unknown;
     if (seen.has(name)) {
       diagnostics.push(
         createDiagnostic("SEM019", "error", locOf(param), `El parámetro '${name}' está duplicado en la función '${fn.Identifier().text}'.`, {
@@ -361,10 +331,4 @@ export function resolveParameters(
     params.push({ name, type });
   }
   return { params };
-}
-
-/** Extrae los statements inmediatos de un bloque o del programa (no
- * recursivo), usados para el hoisting local de funciones/clases. */
-export function immediateStatements(statements: StatementContext[]): StatementContext[] {
-  return statements;
 }

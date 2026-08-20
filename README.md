@@ -1,322 +1,286 @@
 <div align="center">
 
+<img src="compiscript-ide-work/presentation/assets/compiler-pipeline-hero.png" alt="Pipeline de compilación de Compiscript" width="860">
+
 # Compiscript Semantic IDE
 
-### Proyecto 1 · Análisis léxico, sintáctico y semántico con ANTLR 4
+### Del código fuente al significado, con evidencia visible
 
-![Compiscript](https://img.shields.io/badge/Compiscript-.cps-A78BFA?style=for-the-badge)
-![ANTLR](https://img.shields.io/badge/ANTLR-4-EF7B4D?style=for-the-badge)
-![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
-![React](https://img.shields.io/badge/React-19-149ECA?style=for-the-badge&logo=react&logoColor=white)
-![Electron](https://img.shields.io/badge/Electron-Desktop-47848F?style=for-the-badge&logo=electron&logoColor=white)
+IDE académico para ejecutar y explicar las fases léxica, sintáctica y semántica de Compiscript mediante ANTLR 4, TypeScript y React.
 
-Evolución del **Laboratorio 1** hacia un IDE para la fase de **análisis semántico de Compiscript**. El proyecto conserva el lexer/parser generado por ANTLR y añade sistema de tipos, ámbitos, tabla de símbolos, funciones, clases, closures, flujo de control, arreglos, diagnósticos y visualización del árbol semántico.
+[![ANTLR](https://img.shields.io/badge/ANTLR-4-EF7B4D?style=flat-square)](https://www.antlr.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-19-149ECA?style=flat-square&logo=react&logoColor=white)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-6-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vite.dev/)
+[![Electron](https://img.shields.io/badge/Electron-Desktop-47848F?style=flat-square&logo=electron&logoColor=white)](https://www.electronjs.org/)
+[![Tests](https://img.shields.io/badge/tests-105%20passing-15803D?style=flat-square)](compiscript-ide-work/src/__tests__)
+
+[Inicio rápido](#inicio-rápido) · [Capacidades](#qué-demuestra) · [Ejemplos](#ejemplos-preparados-para-la-rúbrica) · [Arquitectura](#arquitectura) · [Documentación](#documentación-y-exposición)
 
 </div>
 
 ---
+
+## Vista rápida
+
+| IDE | Análisis semántico | Tabla de símbolos |
+| --- | --- | --- |
+| Editor `.cps`, casos cargables, navegación por fases y exportaciones | Tipos, funciones, flujo, clases, herencia, arreglos y 23 códigos estables | Inserción, recuperación, actualización, ámbitos, referencias, shadowing y closures |
+
+```text
+código .cps
+   -> lexer ANTLR
+   -> token stream
+   -> parser ANTLR y CST
+   -> hoisting local de declaraciones
+   -> Visitor semántico
+   -> diagnósticos + símbolos + ámbitos + árbol anotado
+```
+
+> La fase semántica solo se ejecuta cuando lexer y parser terminan sin errores. Así se evitan diagnósticos falsos sobre un árbol recuperado o incompleto.
 
 ## Información académica
 
 | Campo | Información |
 | --- | --- |
 | Universidad | Universidad del Valle de Guatemala |
-| Carrera | Ingeniería en Ciencias de la Computación |
-| Curso | Construcción de Compiladores — CC-3032 |
+| Curso | Construcción de Compiladores, CC-3032 |
 | Sección | 10 |
 | Catedrático | Ing. Carlos Valdéz |
-| Entrega | Proyecto 1 — Fase de análisis semántico |
+| Entrega | Proyecto 1, análisis semántico |
 | Grupo | DragonsSlayers 2.0 |
 
-### Integrantes
-
-| Estudiante | Carné |
+| Integrante | Carné |
 | --- | ---: |
 | Pablo Daniel Barillas Moreno | 22193 |
 | Hugo Daniel Barillas Ajín | 23556 |
 | Ernesto Ascencio | 23009 |
 
----
+## Inicio rápido
 
-## Qué implementa
-
-### Pipeline del compilador
-
-```text
-archivo .cps
-   ↓
-Lexer ANTLR
-   ↓
-CommonTokenStream
-   ↓
-Parser ANTLR / CST
-   ↓
-Prepasada de declaraciones
-   ↓
-Analizador semántico
-   ├── sistema de tipos
-   ├── resolución de nombres y ámbitos
-   ├── funciones / recursión / closures
-   ├── control de flujo
-   ├── clases / herencia / this / new
-   ├── arreglos e índices
-   ├── código inalcanzable
-   └── tabla de símbolos
-   ↓
-Diagnósticos + símbolos + ámbitos + árbol semántico
-```
-
-La fase semántica se omite deliberadamente si existen errores léxicos o sintácticos, evitando cascadas de diagnósticos sobre un CST recuperado o incompleto.
-
-### IDE
-
-La interfaz incluye:
-
-- editor para archivos `.cps`;
-- casos válidos, léxicos, sintácticos y semánticos;
-- modo lexer independiente;
-- vista del parser y árbol de parseo;
-- diagnósticos semánticos con códigos `SEM001`–`SEM021`;
-- tabla de símbolos filtrable;
-- árbol de ámbitos;
-- métricas de símbolos, referencias y closures;
-- árbol semántico anotado con tipos;
-- exportaciones TXT, CSV y JSON;
-- documentación técnica embebida.
-
----
-
-## Reglas semánticas cubiertas
-
-### Tipos
-
-- operaciones numéricas con `integer` y `float`;
-- concatenación `string + string`;
-- operadores lógicos para `boolean`;
-- comparaciones compatibles;
-- asignaciones e inicializadores;
-- promoción `integer -> float`;
-- constantes no reasignables;
-- arreglos homogéneos.
-
-### Ámbitos y nombres
-
-- ámbito global y ámbitos anidados;
-- entornos de función, clase, bloque, ciclo, `switch` y `catch`;
-- identificadores no declarados;
-- redeclaración en el mismo ámbito;
-- referencias y shadowing léxico;
-- variables capturadas por closures.
-
-### Funciones
-
-- firmas y parámetros;
-- cantidad y tipo posicional de argumentos;
-- retorno compatible;
-- recursión;
-- funciones anidadas;
-- referencias adelantadas mediante hoisting local de funciones/clases.
-
-### Flujo
-
-- condiciones booleanas en `if`, `while`, `do-while` y `for`;
-- `break` dentro de ciclos o `switch`;
-- `continue` dentro de ciclos;
-- `return` solo dentro de funciones;
-- detección de código inalcanzable.
-
-### Clases y arreglos
-
-- campos y métodos;
-- constructores;
-- herencia;
-- `this`;
-- acceso a miembros existentes;
-- campos `const`;
-- índice `integer`;
-- acceso únicamente sobre arreglos;
-- tipo del iterador de `foreach`.
-
----
-
-## Códigos de diagnóstico
-
-| Código | Regla |
-| --- | --- |
-| SEM001 | Identificador no declarado |
-| SEM002 | Redeclaración en el mismo ámbito |
-| SEM003 | Asignación/inicialización incompatible |
-| SEM004 | Operador aplicado a tipos inválidos |
-| SEM005 | Condición no booleana |
-| SEM006 | Cantidad de argumentos incorrecta |
-| SEM007 | Argumento incompatible |
-| SEM008 | Retorno incompatible |
-| SEM009 | `return` fuera de función |
-| SEM010 | `break` fuera de bucle/switch |
-| SEM011 | `continue` fuera de bucle |
-| SEM012 | Miembro inexistente |
-| SEM013 | Uso inválido de `this` |
-| SEM014 | Clase/constructor/invocación inválida |
-| SEM015 | Índice no entero |
-| SEM016 | Valor no indexable |
-| SEM017 | Arreglo heterogéneo |
-| SEM018 | Código inalcanzable |
-| SEM019 | Parámetro duplicado |
-| SEM020 | Herencia inválida/circular |
-| SEM021 | `switch` incompatible |
-| SEM022 | Expresión semánticamente inválida (reservado) |
-| SEM023 | Uso antes de inicialización |
-
----
-
-## Estructura relevante
-
-```text
-src/
-├── grammars/
-│   └── Compiscript.g4
-├── generated/                 # lexer/parser generados por ANTLR
-├── lib/
-│   ├── analyze.ts             # orquestador del pipeline
-│   ├── antlrErrors.ts
-│   ├── downloads.ts
-│   ├── examples.ts
-│   └── types.ts
-├── semantic/
-│   ├── ast.ts
-│   ├── declarationVisitor.ts
-│   ├── diagnostics.ts
-│   ├── flowAnalysis.ts
-│   ├── scopes.ts
-│   ├── semanticTypes.ts
-│   ├── semanticVisitor.ts
-│   ├── symbols.ts
-│   └── typeSystem.ts
-├── ui/
-│   ├── App.tsx
-│   └── components/
-└── __tests__/
-    └── semantic/
-        └── semanticAnalyzer.test.ts
-
-examples/
-└── semantic/
-    ├── valid_complete.cps
-    └── semantic_errors.cps
-
-docs/
-├── ARQUITECTURA_PROYECTO_1.md
-└── DECISIONES_SEMANTICAS.md
-```
-
----
-
-## Instalación y ejecución
-
-### Requisitos de desarrollo
-
-- Node.js 20 o superior recomendado;
-- npm;
-- Java disponible si se regenerará la gramática con ANTLR.
+El proyecto ejecutable se encuentra en `compiscript-ide-work`:
 
 ```bash
+cd compiscript-ide-work
 npm install
-npm run generate
-npm run check
-npm test
 npm run dev
 ```
 
-La interfaz se levanta por defecto en el puerto configurado por Vite (`3000` en el script del proyecto).
+Abrir `http://localhost:3000`.
 
-### Build web
+### Validación completa
 
 ```bash
+npm run generate
+npm run check
+npm test
 npm run build
-npm run preview
 ```
 
-### Electron
+Requisitos recomendados:
+
+- Node.js 20 o superior;
+- npm;
+- Java únicamente para regenerar ANTLR.
+
+## Qué demuestra
+
+### Sistema de tipos
+
+- `integer`, `float`, `boolean`, `string`, `null`, arreglos, funciones, clases e instancias;
+- operadores aritméticos, lógicos, comparaciones y ternario;
+- promoción segura `integer -> float`;
+- inferencia de variables, campos y retornos;
+- constantes inicializadas y no reasignables;
+- arreglos homogéneos e índices enteros.
+
+### Ámbitos y tabla de símbolos
+
+- entornos globales, de función, clase, bloque, ciclo, `switch` y `catch`;
+- resolución local/global y shadowing en ámbitos hijos;
+- inserción con `declare`, recuperación con `resolve`, actualización con `updateSymbol`;
+- conteo de referencias y variables capturadas por closures;
+- identidades de clase independientes del nombre textual.
+
+### Funciones y flujo
+
+- firmas, parámetros, aridad y tipos posicionales;
+- recursión, referencias adelantadas y funciones anidadas;
+- inferencia de retorno sin anotación;
+- condiciones booleanas;
+- uso contextual de `return`, `break` y `continue`;
+- detección de código inalcanzable.
+
+### Clases y estructuras
+
+- campos, métodos, constructores explícitos e implícitos;
+- herencia, ciclos, `this` y acceso heredado;
+- clases locales y clases homónimas en ámbitos hermanos;
+- arreglos multidimensionales y tipo de iteración en `foreach`.
+
+## Interfaz orientada a la explicación
+
+La vista semántica utiliza un workbench de dos áreas:
+
+1. una guía lateral explica el pipeline, los casos y la gramática activa;
+2. el editor concentra la escritura, carga y ejecución del programa;
+3. el explorador organiza resumen, diagnósticos, símbolos, ámbitos y árboles en pestañas.
+
+Atajos principales:
+
+| Acción | Atajo |
+| --- | --- |
+| Ejecutar análisis | `Ctrl + Enter` |
+| Limpiar/restaurar | `Ctrl + L` |
+| Copiar código | Botón `Copiar` del editor |
+
+## Ejemplos preparados para la rúbrica
+
+La carpeta [examples/semantic](compiscript-ide-work/examples/semantic) contiene ejemplos semánticos verificables. Los casos fallidos mantienen lexer y parser válidos para aislar la regla que se quiere presentar.
+
+| Caso | Cobertura |
+| --- | --- |
+| `valid_complete.cps` | Demostración integral sin errores |
+| `symbol_table_demo.cps` | Inserción, recuperación, actualización, ámbitos, referencias y closures |
+| `errors_types.cps` | Tipos, operadores, constantes y condiciones |
+| `errors_scopes.cps` | Resolución, redeclaración, parámetros e inicialización |
+| `errors_functions.cps` | Firmas, argumentos, retornos e invocaciones |
+| `errors_flow.cps` | Condiciones, terminadores, código muerto y `switch` |
+| `errors_classes.cps` | Miembros, constructores, `this` y herencia |
+| `errors_arrays.cps` | Homogeneidad e indexación |
+
+Ejecutar un caso:
 
 ```bash
+cd compiscript-ide-work
+npm run cli -- examples/semantic/valid_complete.cps --mode semantic
+npm run cli -- examples/semantic/errors_classes.cps --mode semantic
+```
+
+La tabla de códigos esperados y los comandos completos están en [examples/semantic/README.md](compiscript-ide-work/examples/semantic/README.md). La suite `projectExamples.test.ts` verifica automáticamente sus resultados.
+
+## Arquitectura
+
+```text
+compiscript-ide-work/
+├── src/
+│   ├── grammars/          fuente ANTLR
+│   ├── generated/         lexer, parser, Listener y Visitor generados
+│   ├── lib/               pipeline, errores, árboles y exportaciones
+│   ├── semantic/          tipos, símbolos, declaraciones, flujo y Visitor
+│   ├── ui/                aplicación y componentes React
+│   └── __tests__/         suites de integración, semántica y rúbrica
+├── examples/
+│   ├── semantic/          casos vigentes del Proyecto 1
+│   ├── compiscript/       ejemplos integrados de la interfaz
+│   └── rubric/            regresiones de lexer/parser
+├── docs/                  documentación técnica vigente
+└── presentation/          presentación HTML y recursos visuales
+```
+
+Módulos clave:
+
+| Archivo | Responsabilidad |
+| --- | --- |
+| `src/lib/analyze.ts` | Orquesta las tres fases y produce `AnalyzeResult` |
+| `src/semantic/declarationVisitor.ts` | Predeclara clases, miembros, firmas y herencia |
+| `src/semantic/semanticVisitor.ts` | Recorre el CST y aplica las reglas |
+| `src/semantic/scopes.ts` | Administra símbolos y entornos léxicos |
+| `src/semantic/typeSystem.ts` | Centraliza compatibilidad, inferencia y operadores |
+| `src/semantic/flowAnalysis.ts` | Analiza terminación y código inalcanzable |
+
+## Diagnósticos
+
+<details>
+<summary>Mostrar catálogo SEM001–SEM023</summary>
+
+| Código | Regla | Código | Regla |
+| --- | --- | --- | --- |
+| `SEM001` | Identificador no declarado | `SEM013` | Uso inválido de `this` |
+| `SEM002` | Redeclaración | `SEM014` | Clase o invocación inválida |
+| `SEM003` | Asignación incompatible | `SEM015` | Índice no entero |
+| `SEM004` | Operador inválido | `SEM016` | Valor no indexable |
+| `SEM005` | Condición no booleana | `SEM017` | Arreglo heterogéneo |
+| `SEM006` | Aridad incorrecta | `SEM018` | Código inalcanzable |
+| `SEM007` | Argumento incompatible | `SEM019` | Parámetro duplicado |
+| `SEM008` | Retorno incompatible | `SEM020` | Herencia inválida/circular |
+| `SEM009` | `return` fuera de función | `SEM021` | `switch` incompatible |
+| `SEM010` | `break` fuera de contexto | `SEM022` | Reservado |
+| `SEM011` | `continue` fuera de contexto | `SEM023` | Uso antes de inicialización |
+| `SEM012` | Miembro inexistente | | |
+
+</details>
+
+## CLI y escritorio
+
+```bash
+# CLI semántica
+npm run cli:semantic-valid
+npm run cli:semantic-errors
+npm run cli:semantic-symbols
+npm run test:examples
+
+# Aplicación Electron
 npm run desktop
-```
 
-Para generar artefactos Windows:
-
-```bash
+# Artefactos de Windows
 npm run exe:portable
 npm run exe:installer
 ```
 
----
+## Decisiones frente al enunciado
 
-## CLI
+- Se añadió `float` porque el requisito semántico lo exige aunque la gramática base no lo incluya.
+- Las estructuras de control requieren bloques con llaves porque así lo define la gramática ANTLR oficial.
+- `switch` usa discriminante escalar y casos comparables porque los ejemplos oficiales emplean `case 1`, aunque una frase del enunciado lo agrupe con condiciones booleanas.
+- Las clases respetan el ámbito de declaración; una clase local no se hace global.
 
-El modo por defecto de la CLI es `semantic`.
+La justificación completa está en [DECISIONES_SEMANTICAS.md](compiscript-ide-work/docs/DECISIONES_SEMANTICAS.md).
 
-```bash
-npm run cli -- examples/semantic/valid_complete.cps
-npm run cli -- examples/semantic/semantic_errors.cps --mode semantic
-npm run cli -- examples/compiscript/valid.cps --mode parser
-npm run cli -- examples/compiscript/valid.cps --mode lexer
-```
+## Documentación y exposición
 
-Atajos:
-
-```bash
-npm run cli:semantic-valid
-npm run cli:semantic-errors
-```
-
-La CLI muestra diagnósticos por fase y, en modo semántico, un resumen de la tabla de símbolos.
-
----
+| Recurso | Contenido |
+| --- | --- |
+| [Arquitectura](compiscript-ide-work/docs/ARQUITECTURA_PROYECTO_1.md) | Pipeline, módulos e invariantes |
+| [Decisiones semánticas](compiscript-ide-work/docs/DECISIONES_SEMANTICAS.md) | Políticas y contradicciones entre fuentes |
+| [Auditoría](compiscript-ide-work/docs/AUDITORIA_PROYECTO_1.md) | Hallazgos, correcciones y resultados |
+| [Matriz de requisitos](compiscript-ide-work/docs/MATRIZ_REQUISITOS.md) | Trazabilidad de la rúbrica |
+| [Informe PDF](compiscript-ide-work/docs/informe/INFORME_PROYECTO_01.pdf) | Documento académico listo para entrega |
+| [Fuente LaTeX](compiscript-ide-work/docs/informe/INFORME_PROYECTO_01.tex) | Versión editable del informe |
+| [Presentación HTML](compiscript-ide-work/presentation/compiscript-proyecto-1.html) | Exposición interactiva de 17 diapositivas |
 
 ## Pruebas
 
 ```bash
+cd compiscript-ide-work
 npm test
 ```
 
-La batería `src/__tests__/semantic/semanticAnalyzer.test.ts` incluye:
+La batería cubre:
 
-1. programas semánticamente válidos;
-2. cobertura de los códigos `SEM001` a `SEM021`;
-3. pruebas de tabla de símbolos y ámbitos;
-4. regresiones de campos/métodos de clase;
-5. validación de inicializadores de `for` y campos;
-6. condición de `for` con expresión única;
-7. reasignación de campos `const`;
-8. determinismo de IDs de diagnóstico.
+- pipeline de lexer/parser;
+- ejemplos integrados y casos de rúbrica;
+- diagnósticos semánticos `SEM001`–`SEM023`;
+- operaciones directas de `ScopeManager`;
+- ejemplos de exposición por categoría;
+- regresiones de clases locales, inferencia y referencias.
 
----
+## Nota sobre ANTLR
 
-## Decisiones importantes
-
-Existen dos diferencias relevantes entre las fuentes del enunciado:
-
-1. los requisitos semánticos mencionan `float`, aunque la gramática base no lo incluía; el proyecto lo incorpora explícitamente;
-2. los requisitos agrupan `switch` entre las estructuras con “condición booleana”, mientras los ejemplos del lenguaje utilizan discriminantes escalares como enteros; el proyecto conserva el comportamiento mostrado por Compiscript y valida compatibilidad de los `case`.
-
-La explicación completa está en [`docs/DECISIONES_SEMANTICAS.md`](docs/DECISIONES_SEMANTICAS.md).
-
----
-
-## Documentación
-
-- [`docs/ARQUITECTURA_PROYECTO_1.md`](docs/ARQUITECTURA_PROYECTO_1.md): arquitectura y responsabilidades.
-- [`docs/DECISIONES_SEMANTICAS.md`](docs/DECISIONES_SEMANTICAS.md): políticas semánticas y diferencias entre fuentes.
-- `examples/semantic/`: programas preparados para demostrar éxito y fallos de la fase semántica.
-
----
-
-## Nota sobre código generado
-
-Los archivos de `src/generated/` provienen de ANTLR. Si se modifica `src/grammars/Compiscript.g4`, deben regenerarse con:
+`src/grammars/Compiscript.g4` es la fuente de verdad. Los archivos de `src/generated/` deben regenerarse, no editarse manualmente:
 
 ```bash
 npm run generate
+npm run check
+npm test
 ```
 
-No deben editarse manualmente.
+---
+
+<div align="center">
+
+**DragonsSlayers 2.0 · Construcción de Compiladores · Sección 10**
+
+La autoría individual debe respaldarse con el historial real de Git; la documentación no sustituye la evidencia de commits.
+
+</div>
