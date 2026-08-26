@@ -23,7 +23,6 @@ import { VocabularyImpl } from "antlr4ts/VocabularyImpl";
 
 import * as Utils from "antlr4ts/misc/Utils";
 
-import { CompiscriptListener } from "./CompiscriptListener";
 import { CompiscriptVisitor } from "./CompiscriptVisitor";
 
 
@@ -2672,18 +2671,6 @@ export class ProgramContext extends ParserRuleContext {
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_program; }
 	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterProgram) {
-			listener.enterProgram(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitProgram) {
-			listener.exitProgram(this);
-		}
-	}
-	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitProgram) {
 			return visitor.visitProgram(this);
@@ -2752,18 +2739,6 @@ export class StatementContext extends ParserRuleContext {
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_statement; }
 	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterStatement) {
-			listener.enterStatement(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitStatement) {
-			listener.exitStatement(this);
-		}
-	}
-	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitStatement) {
 			return visitor.visitStatement(this);
@@ -2792,18 +2767,6 @@ export class BlockContext extends ParserRuleContext {
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_block; }
 	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterBlock) {
-			listener.enterBlock(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitBlock) {
-			listener.exitBlock(this);
-		}
-	}
-	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitBlock) {
 			return visitor.visitBlock(this);
@@ -2830,18 +2793,6 @@ export class VariableDeclarationContext extends ParserRuleContext {
 	}
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_variableDeclaration; }
-	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterVariableDeclaration) {
-			listener.enterVariableDeclaration(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitVariableDeclaration) {
-			listener.exitVariableDeclaration(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitVariableDeclaration) {
@@ -2870,18 +2821,6 @@ export class ConstantDeclarationContext extends ParserRuleContext {
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_constantDeclaration; }
 	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterConstantDeclaration) {
-			listener.enterConstantDeclaration(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitConstantDeclaration) {
-			listener.exitConstantDeclaration(this);
-		}
-	}
-	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitConstantDeclaration) {
 			return visitor.visitConstantDeclaration(this);
@@ -2902,18 +2841,6 @@ export class TypeAnnotationContext extends ParserRuleContext {
 	}
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_typeAnnotation; }
-	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterTypeAnnotation) {
-			listener.enterTypeAnnotation(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitTypeAnnotation) {
-			listener.exitTypeAnnotation(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitTypeAnnotation) {
@@ -2936,18 +2863,6 @@ export class InitializerContext extends ParserRuleContext {
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_initializer; }
 	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterInitializer) {
-			listener.enterInitializer(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitInitializer) {
-			listener.exitInitializer(this);
-		}
-	}
-	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitInitializer) {
 			return visitor.visitInitializer(this);
@@ -2968,18 +2883,6 @@ export class ExpressionStatementContext extends ParserRuleContext {
 	}
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_expressionStatement; }
-	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterExpressionStatement) {
-			listener.enterExpressionStatement(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitExpressionStatement) {
-			listener.exitExpressionStatement(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitExpressionStatement) {
@@ -3004,18 +2907,6 @@ export class PrintStatementContext extends ParserRuleContext {
 	}
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_printStatement; }
-	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterPrintStatement) {
-			listener.enterPrintStatement(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitPrintStatement) {
-			listener.exitPrintStatement(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitPrintStatement) {
@@ -3050,18 +2941,6 @@ export class IfStatementContext extends ParserRuleContext {
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_ifStatement; }
 	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterIfStatement) {
-			listener.enterIfStatement(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitIfStatement) {
-			listener.exitIfStatement(this);
-		}
-	}
-	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitIfStatement) {
 			return visitor.visitIfStatement(this);
@@ -3087,18 +2966,6 @@ export class WhileStatementContext extends ParserRuleContext {
 	}
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_whileStatement; }
-	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterWhileStatement) {
-			listener.enterWhileStatement(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitWhileStatement) {
-			listener.exitWhileStatement(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitWhileStatement) {
@@ -3127,18 +2994,6 @@ export class DoWhileStatementContext extends ParserRuleContext {
 	}
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_doWhileStatement; }
-	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterDoWhileStatement) {
-			listener.enterDoWhileStatement(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitDoWhileStatement) {
-			listener.exitDoWhileStatement(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitDoWhileStatement) {
@@ -3184,18 +3039,6 @@ export class ForStatementContext extends ParserRuleContext {
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_forStatement; }
 	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterForStatement) {
-			listener.enterForStatement(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitForStatement) {
-			listener.exitForStatement(this);
-		}
-	}
-	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitForStatement) {
 			return visitor.visitForStatement(this);
@@ -3225,18 +3068,6 @@ export class ForInitializerContext extends ParserRuleContext {
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_forInitializer; }
 	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterForInitializer) {
-			listener.enterForInitializer(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitForInitializer) {
-			listener.exitForInitializer(this);
-		}
-	}
-	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitForInitializer) {
 			return visitor.visitForInitializer(this);
@@ -3265,18 +3096,6 @@ export class ForeachStatementContext extends ParserRuleContext {
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_foreachStatement; }
 	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterForeachStatement) {
-			listener.enterForeachStatement(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitForeachStatement) {
-			listener.exitForeachStatement(this);
-		}
-	}
-	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitForeachStatement) {
 			return visitor.visitForeachStatement(this);
@@ -3296,18 +3115,6 @@ export class BreakStatementContext extends ParserRuleContext {
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_breakStatement; }
 	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterBreakStatement) {
-			listener.enterBreakStatement(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitBreakStatement) {
-			listener.exitBreakStatement(this);
-		}
-	}
-	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitBreakStatement) {
 			return visitor.visitBreakStatement(this);
@@ -3326,18 +3133,6 @@ export class ContinueStatementContext extends ParserRuleContext {
 	}
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_continueStatement; }
-	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterContinueStatement) {
-			listener.enterContinueStatement(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitContinueStatement) {
-			listener.exitContinueStatement(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitContinueStatement) {
@@ -3360,18 +3155,6 @@ export class ReturnStatementContext extends ParserRuleContext {
 	}
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_returnStatement; }
-	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterReturnStatement) {
-			listener.enterReturnStatement(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitReturnStatement) {
-			listener.exitReturnStatement(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitReturnStatement) {
@@ -3403,18 +3186,6 @@ export class TryCatchStatementContext extends ParserRuleContext {
 	}
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_tryCatchStatement; }
-	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterTryCatchStatement) {
-			listener.enterTryCatchStatement(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitTryCatchStatement) {
-			listener.exitTryCatchStatement(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitTryCatchStatement) {
@@ -3453,18 +3224,6 @@ export class SwitchStatementContext extends ParserRuleContext {
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_switchStatement; }
 	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterSwitchStatement) {
-			listener.enterSwitchStatement(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitSwitchStatement) {
-			listener.exitSwitchStatement(this);
-		}
-	}
-	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitSwitchStatement) {
 			return visitor.visitSwitchStatement(this);
@@ -3496,18 +3255,6 @@ export class SwitchCaseContext extends ParserRuleContext {
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_switchCase; }
 	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterSwitchCase) {
-			listener.enterSwitchCase(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitSwitchCase) {
-			listener.exitSwitchCase(this);
-		}
-	}
-	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitSwitchCase) {
 			return visitor.visitSwitchCase(this);
@@ -3535,18 +3282,6 @@ export class DefaultCaseContext extends ParserRuleContext {
 	}
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_defaultCase; }
-	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterDefaultCase) {
-			listener.enterDefaultCase(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitDefaultCase) {
-			listener.exitDefaultCase(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitDefaultCase) {
@@ -3578,18 +3313,6 @@ export class FunctionDeclarationContext extends ParserRuleContext {
 	}
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_functionDeclaration; }
-	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterFunctionDeclaration) {
-			listener.enterFunctionDeclaration(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitFunctionDeclaration) {
-			listener.exitFunctionDeclaration(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitFunctionDeclaration) {
@@ -3626,18 +3349,6 @@ export class ParametersContext extends ParserRuleContext {
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_parameters; }
 	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterParameters) {
-			listener.enterParameters(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitParameters) {
-			listener.exitParameters(this);
-		}
-	}
-	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitParameters) {
 			return visitor.visitParameters(this);
@@ -3658,18 +3369,6 @@ export class ParameterContext extends ParserRuleContext {
 	}
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_parameter; }
-	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterParameter) {
-			listener.enterParameter(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitParameter) {
-			listener.exitParameter(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitParameter) {
@@ -3710,18 +3409,6 @@ export class ClassDeclarationContext extends ParserRuleContext {
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_classDeclaration; }
 	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterClassDeclaration) {
-			listener.enterClassDeclaration(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitClassDeclaration) {
-			listener.exitClassDeclaration(this);
-		}
-	}
-	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitClassDeclaration) {
 			return visitor.visitClassDeclaration(this);
@@ -3748,18 +3435,6 @@ export class ClassMemberContext extends ParserRuleContext {
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_classMember; }
 	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterClassMember) {
-			listener.enterClassMember(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitClassMember) {
-			listener.exitClassMember(this);
-		}
-	}
-	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitClassMember) {
 			return visitor.visitClassMember(this);
@@ -3779,18 +3454,6 @@ export class ExpressionContext extends ParserRuleContext {
 	}
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_expression; }
-	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterExpression) {
-			listener.enterExpression(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitExpression) {
-			listener.exitExpression(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitExpression) {
@@ -3818,18 +3481,6 @@ export class AssignmentExpressionContext extends ParserRuleContext {
 	}
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_assignmentExpression; }
-	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterAssignmentExpression) {
-			listener.enterAssignmentExpression(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitAssignmentExpression) {
-			listener.exitAssignmentExpression(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitAssignmentExpression) {
@@ -3861,18 +3512,6 @@ export class ConditionalExpressionContext extends ParserRuleContext {
 	}
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_conditionalExpression; }
-	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterConditionalExpression) {
-			listener.enterConditionalExpression(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitConditionalExpression) {
-			listener.exitConditionalExpression(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitConditionalExpression) {
@@ -3909,18 +3548,6 @@ export class LogicalOrExpressionContext extends ParserRuleContext {
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_logicalOrExpression; }
 	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterLogicalOrExpression) {
-			listener.enterLogicalOrExpression(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitLogicalOrExpression) {
-			listener.exitLogicalOrExpression(this);
-		}
-	}
-	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitLogicalOrExpression) {
 			return visitor.visitLogicalOrExpression(this);
@@ -3955,18 +3582,6 @@ export class LogicalAndExpressionContext extends ParserRuleContext {
 	}
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_logicalAndExpression; }
-	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterLogicalAndExpression) {
-			listener.enterLogicalAndExpression(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitLogicalAndExpression) {
-			listener.exitLogicalAndExpression(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitLogicalAndExpression) {
@@ -4011,18 +3626,6 @@ export class EqualityExpressionContext extends ParserRuleContext {
 	}
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_equalityExpression; }
-	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterEqualityExpression) {
-			listener.enterEqualityExpression(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitEqualityExpression) {
-			listener.exitEqualityExpression(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitEqualityExpression) {
@@ -4086,18 +3689,6 @@ export class RelationalExpressionContext extends ParserRuleContext {
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_relationalExpression; }
 	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterRelationalExpression) {
-			listener.enterRelationalExpression(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitRelationalExpression) {
-			listener.exitRelationalExpression(this);
-		}
-	}
-	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitRelationalExpression) {
 			return visitor.visitRelationalExpression(this);
@@ -4141,18 +3732,6 @@ export class AdditiveExpressionContext extends ParserRuleContext {
 	}
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_additiveExpression; }
-	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterAdditiveExpression) {
-			listener.enterAdditiveExpression(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitAdditiveExpression) {
-			listener.exitAdditiveExpression(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitAdditiveExpression) {
@@ -4207,18 +3786,6 @@ export class MultiplicativeExpressionContext extends ParserRuleContext {
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_multiplicativeExpression; }
 	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterMultiplicativeExpression) {
-			listener.enterMultiplicativeExpression(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitMultiplicativeExpression) {
-			listener.exitMultiplicativeExpression(this);
-		}
-	}
-	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitMultiplicativeExpression) {
 			return visitor.visitMultiplicativeExpression(this);
@@ -4243,18 +3810,6 @@ export class UnaryExpressionContext extends ParserRuleContext {
 	}
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_unaryExpression; }
-	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterUnaryExpression) {
-			listener.enterUnaryExpression(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitUnaryExpression) {
-			listener.exitUnaryExpression(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitUnaryExpression) {
@@ -4284,18 +3839,6 @@ export class PrimaryExpressionContext extends ParserRuleContext {
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_primaryExpression; }
 	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterPrimaryExpression) {
-			listener.enterPrimaryExpression(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitPrimaryExpression) {
-			listener.exitPrimaryExpression(this);
-		}
-	}
-	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitPrimaryExpression) {
 			return visitor.visitPrimaryExpression(this);
@@ -4321,18 +3864,6 @@ export class LiteralExpressionContext extends ParserRuleContext {
 	}
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_literalExpression; }
-	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterLiteralExpression) {
-			listener.enterLiteralExpression(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitLiteralExpression) {
-			listener.exitLiteralExpression(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitLiteralExpression) {
@@ -4363,18 +3894,6 @@ export class LeftHandSideContext extends ParserRuleContext {
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_leftHandSide; }
 	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterLeftHandSide) {
-			listener.enterLeftHandSide(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitLeftHandSide) {
-			listener.exitLeftHandSide(this);
-		}
-	}
-	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitLeftHandSide) {
 			return visitor.visitLeftHandSide(this);
@@ -4399,18 +3918,6 @@ export class PrimaryAtomContext extends ParserRuleContext {
 	}
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_primaryAtom; }
-	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterPrimaryAtom) {
-			listener.enterPrimaryAtom(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitPrimaryAtom) {
-			listener.exitPrimaryAtom(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitPrimaryAtom) {
@@ -4440,18 +3947,6 @@ export class SuffixOperatorContext extends ParserRuleContext {
 	}
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_suffixOperator; }
-	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterSuffixOperator) {
-			listener.enterSuffixOperator(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitSuffixOperator) {
-			listener.exitSuffixOperator(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitSuffixOperator) {
@@ -4487,18 +3982,6 @@ export class ArgumentsContext extends ParserRuleContext {
 	}
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_arguments; }
-	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterArguments) {
-			listener.enterArguments(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitArguments) {
-			listener.exitArguments(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitArguments) {
@@ -4536,18 +4019,6 @@ export class ArrayLiteralContext extends ParserRuleContext {
 	}
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_arrayLiteral; }
-	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterArrayLiteral) {
-			listener.enterArrayLiteral(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitArrayLiteral) {
-			listener.exitArrayLiteral(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitArrayLiteral) {
@@ -4587,18 +4058,6 @@ export class TypeContext extends ParserRuleContext {
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_type; }
 	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterType) {
-			listener.enterType(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitType) {
-			listener.exitType(this);
-		}
-	}
-	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitType) {
 			return visitor.visitType(this);
@@ -4620,18 +4079,6 @@ export class BaseTypeContext extends ParserRuleContext {
 	}
 	// @Override
 	public get ruleIndex(): number { return CompiscriptParser.RULE_baseType; }
-	// @Override
-	public enterRule(listener: CompiscriptListener): void {
-		if (listener.enterBaseType) {
-			listener.enterBaseType(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: CompiscriptListener): void {
-		if (listener.exitBaseType) {
-			listener.exitBaseType(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: CompiscriptVisitor<Result>): Result {
 		if (visitor.visitBaseType) {
