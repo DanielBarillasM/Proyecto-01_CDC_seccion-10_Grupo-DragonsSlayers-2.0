@@ -32,13 +32,13 @@ function ResizableHandle({
     <Separator
       data-slot="resizable-handle"
       className={cn(
-        "group relative flex w-1 items-center justify-center bg-border outline-none aria-[orientation=vertical]:h-1 aria-[orientation=vertical]:w-full",
+        "group relative flex w-1 items-center justify-center bg-border outline-none aria-[orientation=horizontal]:h-1 aria-[orientation=horizontal]:w-full",
         className
       )}
       {...props}
     >
       {withHandle && (
-        <div className="z-10 flex h-4 w-3 items-center justify-center rounded-xs border-2 bg-border group-aria-[orientation=vertical]:h-3 group-aria-[orientation=vertical]:w-4">
+        <div className="z-10 flex h-4 w-3 items-center justify-center rounded-xs border-2 bg-border group-aria-[orientation=horizontal]:h-3 group-aria-[orientation=horizontal]:w-4">
           <GripVertical className="size-2.5" />
         </div>
       )}

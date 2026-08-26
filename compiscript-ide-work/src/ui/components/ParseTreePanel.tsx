@@ -90,7 +90,7 @@ function TreeNodeVisual({ node, depth }: { node: TreeNode; depth: number }) {
     <div style={{ marginLeft: depth > 0 ? "1.25rem" : 0 }}>
       <div
         className={`flex items-center gap-1.5 rounded px-1 py-0.5 text-xs ${
-          isLeaf ? "text-blue-900" : isRule ? "cursor-pointer text-foreground hover:bg-accent" : "cursor-pointer font-head text-primary hover:bg-accent"
+          isLeaf ? "text-blue-900 dark:text-blue-300" : isRule ? "cursor-pointer text-foreground hover:bg-accent" : "cursor-pointer font-head text-foreground hover:bg-accent"
         }`}
         onClick={() => !isLeaf && setCollapsed((value) => !value)}
         role={isLeaf ? undefined : "button"}

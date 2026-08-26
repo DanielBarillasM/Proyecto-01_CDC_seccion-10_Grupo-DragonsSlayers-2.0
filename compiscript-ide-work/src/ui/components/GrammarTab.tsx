@@ -31,7 +31,7 @@ export function GrammarTab({ theme }: { theme: "light" | "dark" }) {
           </Button>
         </div>
       </div>
-      <div className="flex-1">
+      <div className="min-h-0 flex-1">
         <CodeEditor value={grammarSource} language="plaintext" readOnly theme={theme} />
       </div>
     </div>

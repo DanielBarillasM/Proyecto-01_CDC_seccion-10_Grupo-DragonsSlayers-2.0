@@ -51,14 +51,14 @@ export function EditorTabs({
         </TabsTrigger>
       </TabsList>
 
-      <TabsContent value="program" className="flex flex-1 flex-col">
+      <TabsContent value="program" className="flex min-h-0 flex-1 flex-col">
         <EditorBreadcrumb fileName="program.cps" scopeChain={scopeChain} onClearScope={onClearScope} />
         {isEmpty && (
           <div className="border-b-2 bg-yellow-200 px-3 py-1.5 text-xs text-yellow-900">
             La entrada está vacía. Selecciona un caso o carga un archivo Compiscript.
           </div>
         )}
-        <div className="flex-1">
+        <div className="min-h-0 flex-1">
           <CodeEditor
             value={value}
             onChange={onChange}
@@ -71,7 +71,7 @@ export function EditorTabs({
         </div>
       </TabsContent>
 
-      <TabsContent value="grammar" className="flex flex-1 flex-col">
+      <TabsContent value="grammar" className="flex min-h-0 flex-1 flex-col">
         <GrammarTab theme={theme} />
       </TabsContent>
     </Tabs>

@@ -129,7 +129,7 @@ function GroupHeader({ title, subtitle, count }: { title: string; subtitle: stri
     <div className="mb-1 flex items-baseline gap-2">
       <strong className="font-head text-xs uppercase tracking-wide">{title}</strong>
       <span className="text-xs text-muted-foreground">{subtitle}</span>
-      <span className="ml-auto rounded border-2 bg-secondary px-1.5 text-xs">{count}</span>
+      <span className="ml-auto rounded border-2 bg-secondary px-1.5 text-xs text-secondary-foreground">{count}</span>
     </div>
   );
 }
@@ -153,7 +153,7 @@ function ErrorGroup({
         {icon}
         <strong className="font-head text-xs uppercase tracking-wide">{title}</strong>
         <span className="text-xs text-muted-foreground">{subtitle}</span>
-        <span className="ml-auto rounded border-2 bg-secondary px-1.5 text-xs">{errors.length}</span>
+        <span className="ml-auto rounded border-2 bg-secondary px-1.5 text-xs text-secondary-foreground">{errors.length}</span>
       </div>
       <div className="flex flex-col gap-1">
         {errors.map((error, idx) => (

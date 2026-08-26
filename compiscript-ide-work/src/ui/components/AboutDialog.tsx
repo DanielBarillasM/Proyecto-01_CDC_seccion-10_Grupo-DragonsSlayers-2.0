@@ -40,12 +40,12 @@ export function AboutDialog({ open, onOpenChange }: AboutDialogProps) {
           ))}
         </div>
 
-        <div className="flex items-start gap-2 rounded border-2 bg-secondary p-3">
+        <div className="flex items-start gap-2 rounded border-2 bg-secondary p-3 text-secondary-foreground">
           <ShieldCheck size={20} className="mt-0.5 shrink-0" />
           <div className="text-sm">
-            <small className="text-muted-foreground">Motor activo</small>
+            <small className="text-secondary-foreground/70">Motor activo</small>
             <strong className="block font-head">Pipeline de tres fases</strong>
-            <p className="text-muted-foreground">
+            <p className="text-secondary-foreground/70">
               Lexer, parser y visitor semántico conectados al mismo resultado verificable.
             </p>
           </div>

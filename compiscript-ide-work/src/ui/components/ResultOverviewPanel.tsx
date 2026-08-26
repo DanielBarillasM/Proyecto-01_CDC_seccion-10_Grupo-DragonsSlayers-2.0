@@ -97,19 +97,19 @@ export function ResultOverviewPanel({ result }: { result: AnalyzeResult | null }
         </div>
       </div>
 
-      <div className="flex flex-col gap-2 rounded border-2 bg-secondary p-3">
+      <div className="flex flex-col gap-2 rounded border-2 bg-secondary p-3 text-secondary-foreground">
         <div className="flex items-start gap-2">
           <TriangleAlert size={16} className="mt-0.5 shrink-0" />
           <div className="w-full">
             <h4 className="font-head text-xs uppercase tracking-wide">Diagnósticos destacados</h4>
             {semantic.diagnostics.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No se produjeron diagnósticos semánticos.</p>
+              <p className="text-sm text-secondary-foreground/70">No se produjeron diagnósticos semánticos.</p>
             ) : (
               <ul className="flex flex-col gap-1 text-sm">
                 {semantic.diagnostics.slice(0, 3).map((diagnostic) => (
                   <li key={diagnostic.id} className="flex flex-wrap items-baseline gap-1.5">
-                    <code className="rounded border-2 bg-card px-1 text-xs">{diagnostic.code}</code>
-                    <span className="text-xs text-muted-foreground">
+                    <code className="rounded border-2 bg-card px-1 text-xs text-card-foreground">{diagnostic.code}</code>
+                    <span className="text-xs text-secondary-foreground/70">
                       L{diagnostic.line}:C{diagnostic.column}
                     </span>
                     <span>{diagnostic.message}</span>
