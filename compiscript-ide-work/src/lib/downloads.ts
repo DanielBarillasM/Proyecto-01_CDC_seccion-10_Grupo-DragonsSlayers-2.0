@@ -144,12 +144,3 @@ export function symbolsToCsv(result: AnalyzeResult): string {
   ].join("\n");
 }
 
-/** Devuelve tokens en formato tabular de texto. */
-export function tokensToText(tokens: TokenInfo[]): string {
-  if (tokens.length === 0) return "— Sin tokens.";
-  const header = `#\tID\tTIPO\tTEXTO\tLÍNEA\tCOLUMNA\tCANAL`;
-  const rows = tokens.map(
-    (t) => `${t.index}\t${t.type}\t${t.typeName}\t${JSON.stringify(t.text)}\t${t.line}\t${t.column}\t${t.channel}`
-  );
-  return [header, ...rows].join("\n");
-}

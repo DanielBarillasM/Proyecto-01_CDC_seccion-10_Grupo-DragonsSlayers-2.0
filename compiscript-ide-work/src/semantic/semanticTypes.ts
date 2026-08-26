@@ -138,10 +138,6 @@ export function isFunctionType(type: SemanticType): type is FunctionSemanticType
   return type.kind === "function";
 }
 
-export function isClassType(type: SemanticType): type is ClassSemanticType {
-  return type.kind === "class";
-}
-
 // ──── Igualdad estructural ──────────────────────────────────────────────────
 
 export function typesEqual(a: SemanticType, b: SemanticType): boolean {

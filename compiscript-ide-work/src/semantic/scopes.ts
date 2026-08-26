@@ -68,18 +68,8 @@ export class ScopeManager {
     return scope;
   }
 
-  /** Reserva un ámbito hijo sin activarlo (usado en la fase de hoisting,
-   * antes de visitar el cuerpo real de una función o clase). */
-  declareScope(kind: ScopeKind, name: string, parentId: string, start: SourceLocation): ScopeInfo {
-    return this.createScope(kind, name, parentId, start);
-  }
-
   currentScopeId(): string {
     return this.stack[this.stack.length - 1];
-  }
-
-  currentScope(): ScopeInfo {
-    return this.scopes.get(this.currentScopeId())!;
   }
 
   /** Crea un nuevo ámbito hijo del actual y lo convierte en el ámbito activo. */
@@ -87,13 +77,6 @@ export class ScopeManager {
     const scope = this.createScope(kind, name, this.currentScopeId(), start);
     this.stack.push(scope.id);
     return scope;
-  }
-
-  /** Vuelve a activar un ámbito ya creado (usado para retomar el ámbito de
-   * una clase entre la fase de declaración y la fase de cuerpos). */
-  resumeScope(id: string): void {
-    if (!this.scopes.has(id)) throw new Error(`Ámbito desconocido: ${id}`);
-    this.stack.push(id);
   }
 
   /** Cierra el ámbito activo y regresa al ámbito padre. */
@@ -167,16 +150,6 @@ export class ScopeManager {
     while (current) {
       const scope = this.scopes.get(current);
       if (scope?.kind === "function") return scope;
-      current = scope?.parentId ?? null;
-    }
-    return undefined;
-  }
-
-  enclosingClassScope(scopeId: string = this.currentScopeId()): ScopeInfo | undefined {
-    let current: string | null = scopeId;
-    while (current) {
-      const scope = this.scopes.get(current);
-      if (scope?.kind === "class") return scope;
       current = scope?.parentId ?? null;
     }
     return undefined;

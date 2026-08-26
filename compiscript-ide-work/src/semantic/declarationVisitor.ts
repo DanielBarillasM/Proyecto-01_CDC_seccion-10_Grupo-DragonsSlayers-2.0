@@ -77,16 +77,17 @@ export function isSubclassOf(
   return false;
 }
 
-export function lookupField(
+function lookupMember<T>(
   registry: Map<string, ClassInfo>,
   classId: string,
-  fieldName: string
-): FieldInfo | undefined {
+  name: string,
+  members: (info: ClassInfo) => Map<string, T>
+): T | undefined {
   let current = registry.get(classId);
   const seen = new Set<string>();
   while (current) {
-    const field = current.fields.get(fieldName);
-    if (field) return field;
+    const found = members(current).get(name);
+    if (found) return found;
     if (seen.has(current.id)) break;
     seen.add(current.id);
     current = current.parent ?? undefined;
@@ -94,21 +95,20 @@ export function lookupField(
   return undefined;
 }
 
+export function lookupField(
+  registry: Map<string, ClassInfo>,
+  classId: string,
+  fieldName: string
+): FieldInfo | undefined {
+  return lookupMember(registry, classId, fieldName, (info) => info.fields);
+}
+
 export function lookupMethod(
   registry: Map<string, ClassInfo>,
   classId: string,
   methodName: string
 ): MethodInfo | undefined {
-  let current = registry.get(classId);
-  const seen = new Set<string>();
-  while (current) {
-    const method = current.methods.get(methodName);
-    if (method) return method;
-    if (seen.has(current.id)) break;
-    seen.add(current.id);
-    current = current.parent ?? undefined;
-  }
-  return undefined;
+  return lookupMember(registry, classId, methodName, (info) => info.methods);
 }
 
 export function resolveType(
