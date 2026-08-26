@@ -14,5 +14,8 @@ node_modules
 .next/
 .DS_Store
 
+# Build artifacts
+dist/
+
 # Release artifacts
 release/
