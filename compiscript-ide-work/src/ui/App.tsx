@@ -7,11 +7,9 @@ import { ErrorPanel } from "./components/ErrorPanel";
 import { GrammarViewer } from "./components/GrammarViewer";
 import { Header } from "./components/Header";
 import { InputEditor } from "./components/InputEditor";
-import { ParseTreePanel } from "./components/ParseTreePanel";
 import { ProjectTabs } from "./components/ProjectTabs";
 import { ResultStatus } from "./components/ResultStatus";
 import { SemanticResultExplorer } from "./components/SemanticResultExplorer";
-import { TokenTable } from "./components/TokenTable";
 import { analyzeInput } from "../lib/analyze";
 import { exampleCase } from "../lib/examples";
 import type { AnalysisMode, AnalyzeResult, ProjectView } from "../lib/types";
@@ -60,12 +58,7 @@ export function App() {
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 0));
-      const analyzerMode = activeTab === "lexer"
-        ? "lexer"
-        : activeTab === "semantic"
-          ? "semantic"
-          : "parser";
-      setResult(analyzeInput(inputValue, analyzerMode));
+      setResult(analyzeInput(inputValue, "semantic"));
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       if (message.includes("Cannot find module") || message.includes("generated")) {
@@ -152,83 +145,6 @@ export function App() {
                 <SemanticResultExplorer result={result} />
               )}
 
-              <DownloadButtons result={result} inputText={inputValue} />
-            </div>
-          )}
-        </div>
-      )}
-
-      {activeTab === "lexer" && (
-        <div className="tab-content">
-          <SectionIntro
-            title="Lexer de Compiscript"
-            badge="Modo léxico"
-            badgeColor="badge-blue"
-            description="Inspecciona los tokens y errores léxicos producidos por ANTLR sin ejecutar el parser ni la fase semántica."
-          />
-
-          <div className="config-grid">
-            <section className="panel">
-              <div className="panel-header"><h3>Configuración del análisis</h3></div>
-              <CaseSelector value={mode} onChange={handleModeChange} />
-              <InputEditor value={inputValue} mode={mode} isRunning={isRunning} onChange={handleInputChange} onAnalyze={handleAnalyze} onClear={handleClear} />
-              {analyzeError && <div className="analyze-error">{analyzeError}</div>}
-            </section>
-            <section className="panel">
-              <div className="panel-header"><h3>Gramática ANTLR</h3><span className="panel-subtitle">Fuente usada para generar el lexer y el parser</span></div>
-              <GrammarViewer />
-            </section>
-          </div>
-
-          {result && (
-            <div className="results-section">
-              <ResultStatus result={result} />
-              <section className="panel">
-                <div className="panel-header"><h3>Tokens identificados</h3><span className="panel-subtitle">Tokens reconocidos por el lexer</span></div>
-                <TokenTable result={result} />
-              </section>
-              {result.lexicalErrors.length > 0 && (
-                <section className="panel">
-                  <div className="panel-header"><h3>Errores léxicos</h3></div>
-                  <ErrorPanel result={result} />
-                </section>
-              )}
-              <DownloadButtons result={result} inputText={inputValue} />
-            </div>
-          )}
-        </div>
-      )}
-
-      {activeTab === "parser" && (
-        <div className="tab-content">
-          <SectionIntro
-            title="Análisis léxico y sintáctico"
-            badge="Lexer + parser"
-            badgeColor="badge-purple"
-            description="Conserva las capacidades del Laboratorio 1: tokenización, recuperación de errores sintácticos, diagnósticos en español y árbol de parseo real de ANTLR."
-          />
-
-          <div className="config-grid">
-            <section className="panel">
-              <div className="panel-header"><h3>Configuración del análisis</h3></div>
-              <CaseSelector value={mode} onChange={handleModeChange} />
-              <InputEditor value={inputValue} mode={mode} isRunning={isRunning} onChange={handleInputChange} onAnalyze={handleAnalyze} onClear={handleClear} />
-              {analyzeError && <div className="analyze-error">{analyzeError}</div>}
-            </section>
-            <section className="panel">
-              <div className="panel-header"><h3>Gramática ANTLR</h3><span className="panel-subtitle">Producciones del parser</span></div>
-              <GrammarViewer />
-            </section>
-          </div>
-
-          {result && (
-            <div className="results-section">
-              <ResultStatus result={result} />
-              <div className="results-grid">
-                <section className="panel"><div className="panel-header"><h3>Errores léxicos y sintácticos</h3></div><ErrorPanel result={result} /></section>
-                <section className="panel"><div className="panel-header"><h3>Tokens</h3><span className="panel-subtitle">Entrada al parser</span></div><TokenTable result={result} /></section>
-              </div>
-              <section className="panel"><ParseTreePanel result={result} /></section>
               <DownloadButtons result={result} inputText={inputValue} />
             </div>
           )}

@@ -7,7 +7,7 @@ import type { SymbolEntry } from "../semantic/symbols";
 import type { ScopeInfo } from "../semantic/scopes";
 import type { SemanticTreeNode } from "../semantic/ast";
 
-export type ProjectView = "lexer" | "parser" | "semantic" | "docs";
+export type ProjectView = "semantic" | "docs";
 
 export type AnalysisMode = "valid" | "lexical" | "syntax" | "semantic-error" | "custom";
 

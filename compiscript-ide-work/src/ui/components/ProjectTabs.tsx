@@ -1,4 +1,4 @@
-import { BookOpen, BrainCircuit, Layers, Search, Zap } from "lucide-react";
+import { BookOpen, BrainCircuit, Zap } from "lucide-react";
 import type { ReactNode } from "react";
 import type { ProjectView } from "../../lib/types";
 
@@ -15,20 +15,6 @@ const tabs: Array<{
     sublabel: "Lexer + parser + semántica",
     icon: <BrainCircuit size={16} />,
     color: "tab-cyan"
-  },
-  {
-    id: "parser",
-    label: "Análisis sintáctico",
-    sublabel: "Lexer + parser",
-    icon: <Layers size={16} />,
-    color: "tab-purple"
-  },
-  {
-    id: "lexer",
-    label: "Solo lexer",
-    sublabel: "Tokens y errores léxicos",
-    icon: <Search size={16} />,
-    color: "tab-blue"
   },
   {
     id: "docs",
