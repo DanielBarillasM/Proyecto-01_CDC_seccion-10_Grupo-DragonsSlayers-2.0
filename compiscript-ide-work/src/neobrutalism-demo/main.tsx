@@ -1,11 +1,11 @@
-import "./lib/browserProcess";
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { App } from "./ui/App";
-import "./index.css";
+
+import "../index.css";
+import { NeobrutalismDemo } from "./NeobrutalismDemo";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <App />
+    <NeobrutalismDemo />
   </React.StrictMode>
 );

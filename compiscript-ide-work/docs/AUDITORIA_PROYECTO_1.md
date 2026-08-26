@@ -26,7 +26,7 @@ Estado final verificado:
 | Alta | Gramática | La gramática activa aceptaba instrucciones sin bloque en estructuras de control, a diferencia del archivo oficial adjunto. | `if`, ciclos y `foreach` vuelven a requerir `block`; se regeneró ANTLR. | Prueba sintáctica de llaves obligatorias. |
 | Alta | Ejemplos | El ejemplo integral y el caso de recursión usaban `if` sin llaves, por lo que fallaron después de alinear la gramática. | Se actualizaron ejemplos, fixture integrado y prueba de recursión. | Suite integral aprobada. |
 | Media | UI | Editor, gramática y resultados extensos competían en una pila difícil de leer. | Workbench con guía lateral, gramática plegable, editor dominante y explorador por pestañas. | Build de Vite y revisión de componentes. |
-| Media | UI | Faltaban acciones y señales básicas del editor. | Copia con confirmación, indicador de preparación, guía de atajos y estados del pipeline. | `InputEditor`, `CompilerGuide`, `Header`. |
+| Media | UI | Faltaban acciones y señales básicas del editor. | Copia con confirmación, indicador de preparación, guía de atajos y estados del pipeline. | `EditorTabs`, `CompilerGuide`, `MenuBar`. |
 | Media | Documentación | El README indicaba ejecutar npm desde la raíz, aunque `package.json` está en la subcarpeta. | Comandos y estructura corregidos; se añadieron matriz, informe y presentación. | Documentos vigentes enlazados. |
 | Media | Presentación | No existía un material autocontenido para explicar diseño, teoría y demostración. | Presentación HTML navegable, imprimible y con notas del expositor. | `presentation/compiscript-proyecto-1.html`. |
 | Baja | Estilo | Había emojis en documentación heredada y elementos decorativos de la UI. | Se eliminan emojis del texto fuente; la UI utiliza iconos vectoriales consistentes. | Búsqueda Unicode final. |
@@ -65,7 +65,7 @@ Las pruebas semánticas incluyen programas válidos, diagnósticos `SEM001`–`S
 
 ## Build
 
-El build de producción transforma 2024 módulos y finaliza correctamente. Vite advierte que el chunk JavaScript principal supera 500 kB; es una recomendación de optimización, no un error funcional. Una mejora futura sería separar bajo demanda las vistas grandes del IDE.
+El build de producción transforma 3352 módulos y finaliza correctamente. Vite advierte que el chunk JavaScript principal supera 500 kB; es una recomendación de optimización, no un error funcional. El volumen proviene de Monaco Editor, que se empaqueta localmente para funcionar sin CDN.
 
 ## Límite de esta auditoría
 

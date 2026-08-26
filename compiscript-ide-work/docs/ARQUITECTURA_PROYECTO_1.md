@@ -89,12 +89,13 @@ Las referencias a variables, clases, campos y métodos incrementan el contador d
 
 ### Presentación
 
-`src/ui/App.tsx` separa lexer, parser y semántica. La fase semántica utiliza:
+`src/ui/App.tsx` orquesta un IDE con barra de menú, barra de herramientas, barra lateral, editor con pestañas, panel de problemas y dock derecho. La fase semántica utiliza:
 
-- `CompilerGuide`, que explica el flujo y los atajos;
-- `InputEditor`, con carga, copia, posición y análisis por teclado;
-- `SemanticResultExplorer`, que organiza resumen, diagnósticos, símbolos, ámbitos y árboles;
-- paneles especializados que solo renderizan `AnalyzeResult`.
+- `ActivitySidebar`, con `ExamplesExplorer` y `CompilerGuide`;
+- `EditorTabs`, con `CodeEditor` basado en Monaco para edición y resaltado;
+- `ProblemsPanel`, que agrupa diagnósticos léxicos, sintácticos y semánticos;
+- `RightDock`, que organiza `ResultOverviewPanel`, `SymbolTablePanel`, `ScopeTreePanel`, `ParseTreePanel`, `DocumentationPanel` y `ExportsPanel`;
+- `StatusBar` y `CommandPalette` para estado y acciones rápidas.
 
 La interfaz no decide si un programa es válido. Su responsabilidad es explicar resultados ya calculados por el motor.
 

@@ -1,7 +1,10 @@
-import { Copy, Download, GitBranch } from "lucide-react";
+import { Check, Copy, Download, GitBranch } from "lucide-react";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { downloadText, parseTreeToText } from "../../lib/downloads";
 import type { AnalyzeResult, TreeNode } from "../../lib/types";
+import { EmptyPanel } from "./EmptyPanel";
 
 interface ParseTreePanelProps {
   result: AnalyzeResult;
@@ -20,121 +23,88 @@ export function ParseTreePanel({ result }: ParseTreePanelProps) {
     });
   }
 
-  function handleDownload() {
-    downloadText("arbol_compiscript.txt", parseTreeToText(result));
-  }
-
   return (
-    <div className="parse-tree-panel">
-      <div className="parse-tree-header">
-        <div className="parse-tree-title">
-          <GitBranch size={16} />
+    <div className="flex flex-col gap-2 p-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2 text-xs">
+          <GitBranch size={15} />
           <div>
-            <span className="parse-tree-name">Árbol de parseo</span>
-            <span className="parse-tree-desc">
-              Estructura reconocida por el parser generado de Compiscript
-            </span>
+            <strong className="font-head">Árbol de parseo</strong>
+            <span className="ml-1.5 text-muted-foreground">Estructura reconocida por el parser generado de Compiscript</span>
           </div>
         </div>
-        <div className="parse-tree-actions">
-          <div className="view-toggle">
-            <button
-              className={view === "visual" ? "view-btn active" : "view-btn"}
-              onClick={() => setView("visual")}
-            >
-              Visual
-            </button>
-            <button
-              className={view === "text" ? "view-btn active" : "view-btn"}
-              onClick={() => setView("text")}
-            >
-              Texto
-            </button>
-          </div>
-          <button className="btn-icon" onClick={handleCopy}>
-            <Copy size={13} />
+        <div className="flex items-center gap-1.5">
+          <Tabs value={view} onValueChange={(value) => setView(value as "text" | "visual")}>
+            <TabsList className="h-7">
+              <TabsTrigger value="visual" className="h-6 px-2 text-xs">
+                Visual
+              </TabsTrigger>
+              <TabsTrigger value="text" className="h-6 px-2 text-xs">
+                Texto
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+          <Button variant="ghost" size="sm" onClick={handleCopy}>
+            {copied ? <Check size={13} /> : <Copy size={13} />}
             {copied ? "Copiado" : "Copiar"}
-          </button>
-          <button className="btn-icon" onClick={handleDownload}>
-            <Download size={13} />
-            .txt
-          </button>
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => downloadText("arbol_compiscript.txt", parseTreeToText(result))}>
+            <Download size={13} /> .txt
+          </Button>
         </div>
       </div>
 
       {!hasTree ? (
-        <div className="panel-empty">
-          <GitBranch size={24} />
-          <p>
-            {result.lexicalErrors.length > 0
+        <EmptyPanel
+          icon={<GitBranch size={22} />}
+          text={
+            result.lexicalErrors.length > 0
               ? "No se puede generar el árbol de parseo porque hay errores léxicos."
-              : "No se generó árbol de parseo."}
-          </p>
-        </div>
+              : "No se generó árbol de parseo."
+          }
+        />
       ) : view === "text" ? (
-        <pre className="tree-text">{result.formattedParseTree}</pre>
+        <pre className="max-h-[50vh] overflow-auto rounded border-2 bg-card p-2 text-xs">{result.formattedParseTree}</pre>
       ) : (
-        <div className="tree-visual-scroll">
-          <div className="tree-visual">
-            {result.parseTreeNodes.map((node, i) => (
-              <TreeNodeVisual key={i} node={node} depth={0} />
-            ))}
-          </div>
+        <div className="max-h-[50vh] overflow-auto rounded border-2 bg-card p-2">
+          {result.parseTreeNodes.map((node, i) => (
+            <TreeNodeVisual key={i} node={node} depth={0} />
+          ))}
         </div>
       )}
 
-      <div className="parse-tree-theory">
-        <strong>Análisis sintáctico de Compiscript:</strong>
-        <span>
-          {" "}ANTLR genera el parser a partir de Compiscript.g4 y produce este árbol incluso cuando
-          debe recuperarse de errores sintácticos.
-        </span>
-      </div>
+      <p className="text-xs text-muted-foreground">
+        <strong className="text-foreground">Análisis sintáctico de Compiscript:</strong> ANTLR genera el parser a partir de
+        Compiscript.g4 y produce este árbol incluso cuando debe recuperarse de errores sintácticos.
+      </p>
     </div>
   );
 }
 
-// ──── Árbol visual ────────────────────────────────────────────────────────────
-
-interface TreeNodeVisualProps {
-  node: TreeNode;
-  depth: number;
-}
-
-function TreeNodeVisual({ node, depth }: TreeNodeVisualProps) {
+function TreeNodeVisual({ node, depth }: { node: TreeNode; depth: number }) {
   const [collapsed, setCollapsed] = useState(false);
   const isLeaf = node.children.length === 0;
-  const isRule = !isLeaf && node.label.match(/^[a-z]/);
-  const isToken = isLeaf;
-
-  const nodeClass = isToken
-    ? "tree-node tree-token"
-    : isRule
-    ? "tree-node tree-rule"
-    : "tree-node tree-keyword";
+  const isRule = !isLeaf && /^[a-z]/.test(node.label);
 
   return (
-    <div className="tree-node-wrapper" style={{ marginLeft: depth > 0 ? "1.5rem" : 0 }}>
+    <div style={{ marginLeft: depth > 0 ? "1.25rem" : 0 }}>
       <div
-        className={nodeClass}
-        onClick={() => !isLeaf && setCollapsed((c) => !c)}
+        className={`flex items-center gap-1.5 rounded px-1 py-0.5 text-xs ${
+          isLeaf ? "text-blue-900" : isRule ? "cursor-pointer text-foreground hover:bg-accent" : "cursor-pointer font-head text-primary hover:bg-accent"
+        }`}
+        onClick={() => !isLeaf && setCollapsed((value) => !value)}
         role={isLeaf ? undefined : "button"}
         tabIndex={isLeaf ? undefined : 0}
-        onKeyDown={(e) => {
-          if (!isLeaf && (e.key === "Enter" || e.key === " ")) setCollapsed((c) => !c);
+        onKeyDown={(event) => {
+          if (!isLeaf && (event.key === "Enter" || event.key === " ")) setCollapsed((value) => !value);
         }}
       >
-        {!isLeaf && (
-          <span className="tree-chevron">{collapsed ? "+" : "−"}</span>
-        )}
-        <span className="tree-label">{node.label}</span>
-        {!isLeaf && !collapsed && (
-          <span className="tree-child-count">{node.children.length}</span>
-        )}
+        {!isLeaf && <span className="w-2.5 text-center">{collapsed ? "+" : "−"}</span>}
+        <span>{node.label}</span>
+        {!isLeaf && !collapsed && <span className="text-muted-foreground">{node.children.length}</span>}
       </div>
-
       {!isLeaf && !collapsed && (
-        <div className="tree-children">
+        <div>
           {node.children.map((child, i) => (
             <TreeNodeVisual key={i} node={child} depth={depth + 1} />
           ))}

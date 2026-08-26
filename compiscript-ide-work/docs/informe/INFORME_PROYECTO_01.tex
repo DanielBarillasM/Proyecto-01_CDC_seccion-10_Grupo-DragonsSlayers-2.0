@@ -1336,45 +1336,47 @@ Los principios aplicados son:
 \setlength{\unitlength}{1mm}
 \begin{picture}(150,69)
   \put(62,57){\framebox(26,8){App}}
-  \put(5,40){\framebox(31,8){Header}}
-  \put(60,40){\framebox(31,8){ProjectTabs}}
-  \put(112,40){\framebox(34,8){CompilerGuide}}
-  \put(4,22){\framebox(32,8){InputEditor}}
-  \put(58,22){\framebox(35,8){ResultStatus}}
-  \put(105,22){\framebox(43,8){ResultExplorer}}
-  \put(50,3){\framebox(30,8){Símbolos}}
-  \put(84,3){\framebox(30,8){Scopes}}
-  \put(118,3){\framebox(30,8){Árboles}}
+  \put(2,40){\framebox(28,8){MenuBar}}
+  \put(38,40){\framebox(28,8){Toolbar}}
+  \put(74,40){\framebox(34,8){ActivitySidebar}}
+  \put(116,40){\framebox(30,8){RightDock}}
+  \put(2,22){\framebox(32,8){EditorTabs}}
+  \put(44,22){\framebox(32,8){ProblemsPanel}}
+  \put(84,22){\framebox(30,8){StatusBar}}
+  \put(120,22){\framebox(28,8){CommandPalette}}
+  \put(2,3){\framebox(30,8){Resultado}}
+  \put(36,3){\framebox(28,8){Símbolos}}
+  \put(68,3){\framebox(28,8){Scopes}}
+  \put(100,3){\framebox(28,8){Árboles}}
+  \put(132,3){\framebox(16,8){Exportar}}
   \put(67,57){\vector(-3,-1){35}}
   \put(75,57){\vector(0,-1){9}}
   \put(83,57){\vector(3,-1){33}}
-  \put(68,40){\vector(-2,-1){35}}
-  \put(75,40){\vector(0,-1){10}}
-  \put(82,40){\vector(2,-1){29}}
-  \put(119,22){\vector(-2,-1){39}}
-  \put(126,22){\vector(-1,-1){20}}
-  \put(133,22){\vector(0,-1){11}}
+  \put(131,40){\vector(0,-1){9}}
+  \put(18,22){\vector(0,-1){11}}
+  \put(60,22){\vector(0,-1){11}}
 \end{picture}
-\caption{Jerarquía simplificada de componentes React.}
+\caption{Jerarquía simplificada de componentes React del IDE neobrutalista.}
 \label{fig:ui-components}
 \end{figure}
 
 \section{Editor y carga de archivos}
 
-\archivo{InputEditor} permite seleccionar \archivo{.cps}, editar, limpiar, copiar y
-descargar. El control limita visualmente la extensión y valida de nuevo antes de leer
-el archivo. Se muestran nombre, cantidad de líneas, caracteres, posición del cursor y
-estado de preparación.
+\archivo{EditorTabs} contiene el editor Monaco con resaltado de sintaxis
+\Compiscript, carga de \archivo{.cps}, edición, limpieza, copia y descarga. Se
+muestran nombre, cantidad de líneas, caracteres, posición del cursor y estado de
+preparación.
 
 \section{Navegación por fases}
 
-\archivo{ProjectTabs} separa lexer, parser, semántica y documentación. Esto permite
-estudiar tokenización sin crear el parser, observar el CST sin ejecutar semántica o
-inspeccionar el pipeline completo.
+La barra lateral \archivo{ActivitySidebar} separa ejemplos y ruta de análisis. El
+dock derecho \archivo{RightDock} organiza resultado, símbolos, ámbitos, árboles,
+documentación y exportación. Esto permite estudiar tokenización, observar el CST,
+inspeccionar el pipeline completo o consultar la documentación sin cambiar de vista.
 
 \section{Explorador semántico}
 
-\archivo{SemanticResultExplorer} organiza resultados en:
+\archivo{RightDock} organiza resultados en:
 
 \begin{description}
   \item[Resumen.] Métricas, aceptación y salud de la fase.
@@ -1702,7 +1704,7 @@ Referencias & faltaban usos de clase y miembros & propagación de \codigo{symbol
 Símbolos & no había actualización pública & \codigo{updateSymbol} con invariantes \\
 Gramática & controles aceptaban cuerpos sin bloque & reglas alineadas y ANTLR regenerado \\
 Ejemplos & fragmentos incompatibles con llaves & fixtures y pruebas actualizados \\
-UI & resultados extensos competían con editor & workbench y pestañas \\
+UI & resultados extensos competían con editor & IDE neobrutalista con dock y paneles \\
 Documentación & rutas y cifras antiguas & matriz, informe y materiales actualizados \\
 \bottomrule
 \end{longtable}
@@ -2029,8 +2031,8 @@ Archivo & Responsabilidad \\
 \archivo{src/semantic/ast.ts} & nodos semánticos \\
 \archivo{src/cli/run.ts} & interfaz de consola \\
 \archivo{src/ui/App.tsx} & coordinación del frontend \\
-\archivo{src/ui/components/InputEditor.tsx} & editor y archivos \\
-\archivo{src/ui/components/SemanticResultExplorer.tsx} & navegación de resultados \\
+\archivo{src/ui/components/EditorTabs.tsx} & editor Monaco y archivos \\
+\archivo{src/ui/components/RightDock.tsx} & navegación de resultados \\
 \archivo{src/ui/components/SymbolTablePanel.tsx} & tabla de símbolos \\
 \archivo{src/ui/components/ScopeTreePanel.tsx} & árbol de scopes \\
 \archivo{src/ui/components/SemanticTreePanel.tsx} & árbol semántico \\
