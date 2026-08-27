@@ -16,55 +16,40 @@
 
 import type { StatementContext } from "../generated/CompiscriptParser";
 
-export function statementTerminates(ctx: StatementContext): boolean {
-  if (ctx.returnStatement() || ctx.breakStatement() || ctx.continueStatement()) {
-    return true;
-  }
+/** Recursión común a ambos análisis: solo cambia qué instrucción cuenta
+ * como terminadora (`return` únicamente, o también `break`/`continue`). */
+function statementSatisfies(ctx: StatementContext, isTerminator: (s: StatementContext) => boolean): boolean {
+  if (isTerminator(ctx)) return true;
 
   const block = ctx.block();
   if (block) {
-    return block.statement().some((s) => statementTerminates(s));
+    return block.statement().some((s) => statementSatisfies(s, isTerminator));
   }
 
   const ifStmt = ctx.ifStatement();
   if (ifStmt) {
     const branches = ifStmt.block();
     if (branches.length < 2) return false; // sin `else`, no puede garantizar terminación
-    return blockTerminates(branches[0].statement()) && blockTerminates(branches[1].statement());
+    return branches.every((branch) =>
+      branch.statement().some((s) => statementSatisfies(s, isTerminator))
+    );
   }
 
   return false;
+}
+
+export function statementTerminates(ctx: StatementContext): boolean {
+  return statementSatisfies(
+    ctx,
+    (s) => Boolean(s.returnStatement() || s.breakStatement() || s.continueStatement())
+  );
 }
 
 /** ¿El cuerpo de una función (lista de statements) garantiza terminar en
  * todas sus rutas con `return`? Usado para advertir sobre retornos
  * faltantes en funciones con tipo de retorno declarado distinto de void. */
 export function bodyGuaranteesReturn(statements: StatementContext[]): boolean {
-  return statements.some((s) => statementReturnsOnAllPaths(s));
-}
-
-function statementReturnsOnAllPaths(ctx: StatementContext): boolean {
-  if (ctx.returnStatement()) return true;
-
-  const block = ctx.block();
-  if (block) return block.statement().some((s) => statementReturnsOnAllPaths(s));
-
-  const ifStmt = ctx.ifStatement();
-  if (ifStmt) {
-    const branches = ifStmt.block();
-    if (branches.length < 2) return false;
-    return blockReturnsOnAllPaths(branches[0].statement()) && blockReturnsOnAllPaths(branches[1].statement());
-  }
-
-  return false;
-}
-
-function blockTerminates(statements: StatementContext[]): boolean {
-  return statements.some((statement) => statementTerminates(statement));
-}
-
-function blockReturnsOnAllPaths(statements: StatementContext[]): boolean {
-  return statements.some((statement) => statementReturnsOnAllPaths(statement));
+  return statements.some((s) => statementSatisfies(s, (x) => Boolean(x.returnStatement())));
 }
 
 /** Marca el primer statement inalcanzable dentro de una lista, aplicando
