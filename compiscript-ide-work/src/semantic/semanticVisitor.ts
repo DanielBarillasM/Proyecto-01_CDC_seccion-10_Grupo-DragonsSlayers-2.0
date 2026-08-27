@@ -1517,5 +1517,3 @@ class SemanticAnalyzer extends AbstractParseTreeVisitor<SemanticTreeNode> implem
     }
   }
 }
-
-export { isInstanceType };

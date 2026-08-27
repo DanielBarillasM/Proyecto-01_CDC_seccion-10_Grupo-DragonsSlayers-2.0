@@ -97,8 +97,7 @@ export class ScopeManager {
    * existente para poder señalar su ubicación original (SEM002).
    */
   declare(
-    entry: Omit<SymbolEntry, "id" | "scopeId" | "references"> & { scopeId?: string },
-    opts: { allowShadowing?: boolean } = {}
+    entry: Omit<SymbolEntry, "id" | "scopeId" | "references"> & { scopeId?: string }
   ): DeclareResult {
     const scopeId = entry.scopeId ?? this.currentScopeId();
     const scope = this.scopes.get(scopeId);
@@ -108,7 +107,6 @@ export class ScopeManager {
     if (existing) {
       return { ok: false, existing };
     }
-    void opts;
 
     const id = `sym-${this.symbolCounter++}`;
     const symbol: SymbolEntry = {
