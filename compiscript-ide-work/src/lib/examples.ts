@@ -1,4 +1,8 @@
 import grammarText from "../grammars/Compiscript.g4?raw";
+import validSource from "../../examples/compiscript/valid.cps?raw";
+import lexicalErrorSource from "../../examples/compiscript/lexical_errors.cps?raw";
+import syntaxErrorSource from "../../examples/compiscript/syntax_errors.cps?raw";
+import semanticErrorSource from "../../examples/semantic/semantic_errors.cps?raw";
 
 export interface ExampleCase {
   title: string;
@@ -18,98 +22,10 @@ export const exampleCase: ExampleCase = {
   badge: "CPS",
   description:
     "Subconjunto de TypeScript con variables, funciones, arreglos, clases y estructuras de control.",
-  validInput: `const PI: integer = 314;
-
-function factorial(n: integer): integer {
-  if (n <= 1) { return 1; }
-  return n * factorial(n - 1);
-}
-
-class Animal {
-  let nombre: string;
-
-  function constructor(nombre: string) {
-    this.nombre = nombre;
-  }
-}
-
-class Perro : Animal {
-  function hablar(): string {
-    return this.nombre + " ladra.";
-  }
-}
-
-let notas: integer[] = [90, 85, 100];
-let perro: Perro = new Perro("Toby");
-
-foreach (nota in notas) {
-  if (nota < 60) { continue; }
-  print(nota);
-}
-
-try {
-  print(perro.nombre);
-} catch (err) {
-  print("Error: " + err);
-}`,
-  lexicalErrorInput: `let primero: integer = 10 @ 2;
-let segundo: integer = 20 # 4;
-print(primero);`,
-  syntaxErrorInput: `let nombre: string = "Compiscript"
-const total: integer = 10
-
-if (total > 5 {
-  print(nombre)
-}
-
-while (total < 20) {
-  total = total + 1
-}`,
-  semanticErrorInput: `let total: integer = "texto";
-let activo: boolean = true;
-let calculo: integer = activo - 1;
-
-if (total) {
-  print(total);
-}
-
-function sumar(a: integer, b: integer): integer {
-  return a + b;
-}
-
-sumar(1);
-sumar(1, "dos");
-print(noExiste);
-
-function retornoIncorrecto(): integer {
-  return "texto";
-  print("inalcanzable");
-}
-
-class Persona {
-  let nombre: string;
-  const codigo: integer = 1;
-
-  function constructor(nombre: string) {
-    this.nombre = nombre;
-  }
-}
-
-let persona: Persona = new Persona("Ana");
-print(persona.edad);
-persona.codigo = 2;
-
-let numeros: integer[] = [1, 2, 3];
-print(numeros["cero"]);
-print(total[0]);
-let mezcla = [1, "dos", true];
-
-print(this);
-let fantasma = new NoExiste();
-
-break;
-continue;
-return 1;`,
+  validInput: validSource.trimEnd(),
+  lexicalErrorInput: lexicalErrorSource.trimEnd(),
+  syntaxErrorInput: syntaxErrorSource.trimEnd(),
+  semanticErrorInput: semanticErrorSource.trimEnd(),
   lexicalErrorDescription:
     "Contiene los caracteres no reconocidos '@' y '#'; el lexer debe reportar ambos y continuar.",
   syntaxErrorDescription:
