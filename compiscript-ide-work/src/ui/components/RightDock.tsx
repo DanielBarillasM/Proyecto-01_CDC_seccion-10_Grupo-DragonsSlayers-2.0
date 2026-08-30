@@ -1,4 +1,4 @@
-import { Braces, Database, Download, FolderTree, ListChecks, Network } from "lucide-react";
+import { Braces, Database, Download, FlaskConical, FolderTree, ListChecks, Network } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -12,8 +12,9 @@ import { ResultOverviewPanel } from "./ResultOverviewPanel";
 import { ScopeTreePanel } from "./ScopeTreePanel";
 import { SemanticTreePanel } from "./SemanticTreePanel";
 import { SymbolTablePanel } from "./SymbolTablePanel";
+import { TestsPanel } from "./TestsPanel";
 
-export type DockTabId = "resultado" | "simbolos" | "ambitos" | "arboles" | "documentacion" | "exportar";
+export type DockTabId = "resultado" | "simbolos" | "ambitos" | "arboles" | "documentacion" | "exportar" | "pruebas";
 
 interface RightDockProps {
   result: AnalyzeResult | null;
@@ -21,9 +22,10 @@ interface RightDockProps {
   activeTab: DockTabId;
   onTabChange: (tab: DockTabId) => void;
   onSelectScope: (chain: ScopeInfo[]) => void;
+  onLoadTestSource?: (source: string) => void;
 }
 
-export function RightDock({ result, inputText, activeTab, onTabChange, onSelectScope }: RightDockProps) {
+export function RightDock({ result, inputText, activeTab, onTabChange, onSelectScope, onLoadTestSource }: RightDockProps) {
   return (
     <Tabs value={activeTab} onValueChange={(next) => onTabChange(next as DockTabId)} className="flex h-full flex-col gap-0">
       <TabsList variant="line" className="h-9 justify-start overflow-x-auto rounded-none border-b-2 bg-card px-1">
@@ -44,6 +46,9 @@ export function RightDock({ result, inputText, activeTab, onTabChange, onSelectS
         </TabsTrigger>
         <TabsTrigger value="exportar" className="px-2">
           <Download size={14} />
+        </TabsTrigger>
+        <TabsTrigger value="pruebas" className="px-2">
+          <FlaskConical size={14} />
         </TabsTrigger>
       </TabsList>
 
@@ -94,6 +99,12 @@ export function RightDock({ result, inputText, activeTab, onTabChange, onSelectS
       <TabsContent value="exportar" className="flex-1 overflow-hidden">
         <ScrollArea className="h-full">
           <ExportsPanel result={result} inputText={inputText} />
+        </ScrollArea>
+      </TabsContent>
+
+      <TabsContent value="pruebas" className="flex-1 overflow-hidden">
+        <ScrollArea className="h-full">
+          <TestsPanel onLoadSource={onLoadTestSource} />
         </ScrollArea>
       </TabsContent>
     </Tabs>

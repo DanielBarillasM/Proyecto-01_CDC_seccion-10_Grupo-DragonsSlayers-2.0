@@ -8,6 +8,7 @@ import {
   Download,
   Edit3,
   FileCode2,
+  FlaskConical,
   FolderTree,
   Info,
   ListChecks,
@@ -134,6 +135,9 @@ export function CommandPalette({
           </CommandItem>
           <CommandItem onSelect={() => run(() => onSelectDock("exportar"))}>
             <Download /> Exportar evidencia
+          </CommandItem>
+          <CommandItem onSelect={() => run(() => onSelectDock("pruebas"))}>
+            <FlaskConical /> Panel de pruebas
           </CommandItem>
           <CommandItem onSelect={() => run(onOpenAbout)}>
             <Info /> Acerca de

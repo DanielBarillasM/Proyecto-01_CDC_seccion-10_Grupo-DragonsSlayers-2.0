@@ -139,7 +139,7 @@ identidad de clases, la detección de código inalcanzable, el catálogo
 presentan diagramas vectoriales, ejemplos reproducibles, una matriz de trazabilidad y
 la estrategia de pruebas.
 
-La versión documentada reporta \textbf{102 pruebas aprobadas en 5 suites}, generación
+La versión documentada reporta \textbf{115 pruebas aprobadas en 7 suites}, generación
 reproducible de ANTLR, comprobación TypeScript y build de producción exitosos. El
 alcance concluye en el análisis semántico: no se interpreta el programa, no se genera
 código intermedio y no se produce código de máquina.
@@ -161,7 +161,8 @@ The system exposes a unified result model to a React web interface, a command-li
 client and an Electron desktop application. Its semantic infrastructure includes
 symbol insertion, lookup, controlled updates, nested scopes, references, closure
 captures, class identity, inheritance and return-type inference. The implementation
-is validated by 102 automated tests distributed across five suites. This document
+is validated by 115 automated tests distributed across seven suites (dedicated lexer,
+parser and semantic testers, plus rubric regressions). This document
 combines theoretical background, implementation details, diagrams, reproducible
 examples, traceability and operational instructions.
 
@@ -517,7 +518,7 @@ compiscript-ide-work/
 |-- presentation/         presentación e imágenes
 |-- public/               recursos del frontend
 |-- src/
-|   |-- __tests__/        cinco suites Vitest
+|   |-- __tests__/        siete suites Vitest
 |   |-- cli/run.ts        cliente de consola
 |   |-- generated/        salida de ANTLR
 |   |-- grammars/         gramática fuente
@@ -604,7 +605,7 @@ React & 19 & interfaz declarativa \\
 Vite & 6 & desarrollo y build web \\
 Vitest & 3.2 & pruebas \\
 Electron & 43 & escritorio \\
-electron-builder & 26 & portable e instalador \\
+electron-builder & 26 & empaquetado Windows, macOS y Linux \\
 LaTeX + TikZ & TeX Live & documentación vectorial \\
 \bottomrule
 \end{tabularx}
@@ -1459,9 +1460,12 @@ reduce la superficie expuesta por el contenido renderizado.
 \section{Empaquetado}
 
 \codigo{npm run exe:portable} genera una aplicación independiente y
-\codigo{npm run exe:installer} un instalador NSIS, ambos Windows x64. Los artefactos
-quedan en \archivo{release}. El usuario final no necesita Node ni Java; Java solo
-interviene al regenerar ANTLR.
+\codigo{npm run exe:installer} un instalador NSIS, ambos Windows x64.
+\codigo{npm run exe:mac} produce \archivo{.zip} y \archivo{.dmg} sin firma para
+Intel y Apple Silicon, y \codigo{npm run exe:linux} produce un \archivo{AppImage}
+x64. Los tres se generan sin certificado comercial de firma, igual que la
+distribución portable de Windows. Los artefactos quedan en \archivo{release}. El
+usuario final no necesita Node ni Java; Java solo interviene al regenerar ANTLR.
 
 \section{Configuración reproducible}
 
@@ -1506,11 +1510,13 @@ Suite & Cantidad & Cobertura principal \\
 \midrule
 \archivo{semanticAnalyzer.test.ts} & 68 & reglas semánticas y regresiones \\
 \archivo{scopeManager.test.ts} & 4 & insertar, recuperar, actualizar y scopes \\
-\archivo{analyze.compiscript.test.ts} & 14 & lexer, parser y pipeline \\
-\archivo{rubric.examples.test.ts} & 8 & matriz léxica/sintáctica heredada \\
 \archivo{projectExamples.test.ts} & 8 & archivos semánticos de demostración \\
+\archivo{lexer.test.ts} & 5 & tokenización y diagnósticos léxicos \\
+\archivo{parser.test.ts} & 9 & aceptación, CST y diagnósticos sintácticos \\
+\archivo{rubric.examples.test.ts} & 8 & matriz léxica/sintáctica heredada \\
+\archivo{testCases.defaults.test.ts} & 13 & valida los casos por defecto del panel "Pruebas" del IDE \\
 \midrule
-\textbf{Total} & \textbf{102} & cinco suites aprobadas \\
+\textbf{Total} & \textbf{115} & siete suites aprobadas \\
 \bottomrule
 \end{tabularx}
 \caption{Distribución de pruebas de la versión documentada.}
@@ -1519,9 +1525,12 @@ Suite & Cantidad & Cobertura principal \\
 
 La suite histórica \archivo{examples.sync.test.ts} se retiró cuando los ejemplos
 integrados dejaron de duplicarse en cadenas TypeScript y pasaron a importarse
-directamente desde los archivos \archivo{.cps} mediante \codigo{?raw}. La reducción
-de 105 a 102 pruebas elimina una comprobación redundante, no cobertura funcional de
-las reglas del lenguaje.
+directamente desde los archivos \archivo{.cps} mediante \codigo{?raw}. El antiguo
+\archivo{analyze.compiscript.test.ts} se dividió en \archivo{lexer.test.ts} y
+\archivo{parser.test.ts} para que cada fase tenga un tester identificable por
+separado, y \archivo{testCases.defaults.test.ts} se agregó para validar los casos
+por defecto del nuevo panel "Pruebas" del IDE, que expone estos mismos testers de
+forma interactiva sin salir de la aplicación.
 
 \section{Pruebas de ScopeManager}
 
@@ -1602,7 +1611,7 @@ porque el bundle principal supera 500 kB.
 \toprule
 Criterio & Evidencia \\
 \midrule
-Corrección & reglas y 102 pruebas \\
+Corrección & reglas y 115 pruebas \\
 Reproducibilidad & gramática, lockfile y scripts \\
 Trazabilidad & códigos, ubicaciones, IDs y matriz \\
 Modularidad & separación lib/semantic/ui \\
@@ -1661,7 +1670,7 @@ Requisito & Evidencia & Estado \\
 Parser generado & gramática y \archivo{src/generated} & \estado{Cubierto} \\
 Recorrido Visitor & \archivo{semanticVisitor.ts} & \estado{Cubierto} \\
 Árbol visual & CST y árbol semántico & \estado{Cubierto} \\
-Casos de prueba & cinco suites y ejemplos & \estado{Cubierto} \\
+Casos de prueba & siete suites y ejemplos & \estado{Cubierto} \\
 Tabla de símbolos & \archivo{scopes.ts} y panel UI & \estado{Cubierto} \\
 IDE & React/Vite y Electron & \estado{Cubierto} \\
 Documentación & informe, matriz y decisiones & \estado{Cubierto} \\
@@ -1759,7 +1768,7 @@ explica explícitamente el motivo mediante \codigo{skipReason}.
   \item npm 9 o posterior;
   \item Java/JRE 11 o posterior para regenerar ANTLR;
   \item navegador moderno;
-  \item Windows x64 para los ejecutables configurados;
+  \item Windows x64, macOS (Intel/Apple Silicon) o Linux x64 para los ejecutables configurados;
   \item distribución LaTeX con TikZ para recompilar este informe.
 \end{itemize}
 
@@ -1801,8 +1810,10 @@ npm run cli:semantic-symbols
 \begin{verbatim}
 npm run build
 npm run desktop
-npm run exe:portable
-npm run exe:installer
+npm run exe:portable   # Windows portable
+npm run exe:installer  # Windows NSIS
+npm run exe:mac        # macOS zip + dmg (x64/arm64)
+npm run exe:linux      # Linux AppImage (x64)
 \end{verbatim}
 
 \section{Modificación de la gramática}
@@ -1845,7 +1856,7 @@ tipos, símbolos y diagnósticos; y la UI presenta el resultado sin duplicar reg
 
 La tabla de símbolos demuestra las operaciones requeridas y agrega referencias,
 capturas e identidad. El árbol semántico permite observar el significado calculado.
-Los ejemplos y 102 pruebas convierten los requisitos en evidencia repetible.
+Los ejemplos y 115 pruebas convierten los requisitos en evidencia repetible.
 
 \section{Limitaciones}
 
@@ -1856,7 +1867,7 @@ Los ejemplos y 102 pruebas convierten los requisitos en evidencia repetible.
   \item el análisis de flujo no construye un CFG completo;
   \item \codigo{try/catch} modela alcance, no excepciones dinámicas;
   \item el bundle web principal conserva una advertencia de tamaño;
-  \item el empaquetado configurado se limita a Windows x64;
+  \item ninguno de los tres empaquetados (Windows, macOS, Linux) usa firma comercial;
   \item la política de \codigo{switch} depende de una decisión documentada;
   \item no existe navegación interactiva a declaración todavía.
 \end{itemize}
@@ -1910,7 +1921,7 @@ la entrada.
         pruebas.
   \item La visualización conjunta de CST, árbol semántico, scopes y símbolos convierte
         el IDE en una herramienta pedagógica.
-  \item Las 102 pruebas y los archivos de demostración permiten repetir la evidencia
+  \item Las 115 pruebas y los archivos de demostración permiten repetir la evidencia
         técnica y proteger regresiones.
 \end{enumerate}
 
@@ -2062,14 +2073,16 @@ Comando & Propósito \\
 \codigo{npm run generate} & regenerar ANTLR \\
 \codigo{npm run dev} & iniciar Vite \\
 \codigo{npm run check} & comprobar TypeScript \\
-\codigo{npm test} & ejecutar 102 pruebas \\
+\codigo{npm test} & ejecutar 115 pruebas \\
 \codigo{npm run test:examples} & ejecutar casos semánticos en disco \\
 \codigo{npm run build} & construir producción web \\
 \codigo{npm run preview} & servir el build \\
 \codigo{npm run cli -- archivo --mode semantic} & analizar desde terminal \\
 \codigo{npm run desktop} & construir y abrir Electron \\
-\codigo{npm run exe:portable} & crear portable x64 \\
+\codigo{npm run exe:portable} & crear portable Windows x64 \\
 \codigo{npm run exe:installer} & crear instalador NSIS \\
+\codigo{npm run exe:mac} & crear zip/dmg macOS (x64/arm64) \\
+\codigo{npm run exe:linux} & crear AppImage Linux x64 \\
 \bottomrule
 \end{longtable}
 
@@ -2112,9 +2125,9 @@ Modos & lexer, parser y semantic \\
 Tipos & primitivos, arreglos, funciones, clases e instancias \\
 Scopes & global, bloque, función, clase, ciclo, catch y switch \\
 Diagnósticos & \diag{SEM001}--\diag{SEM023} \\
-Pruebas & 102 en 5 suites \\
+Pruebas & 115 en 7 suites \\
 Salidas & UI, CLI, CSV, JSON, TXT y árboles \\
-Plataforma empaquetada & Windows x64 \\
+Plataforma empaquetada & Windows x64, macOS (x64/arm64) y Linux x64 \\
 Alcance & frente hasta análisis semántico \\
 \bottomrule
 \end{tabularx}

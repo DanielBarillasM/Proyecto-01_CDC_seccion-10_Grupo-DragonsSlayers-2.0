@@ -13,7 +13,7 @@ IDE académico para ejecutar y explicar las fases léxica, sintáctica y semánt
 [![React](https://img.shields.io/badge/React-19-149ECA?style=flat-square&logo=react&logoColor=white)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite-6-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vite.dev/)
 [![Electron](https://img.shields.io/badge/Electron-Desktop-47848F?style=flat-square&logo=electron&logoColor=white)](https://www.electronjs.org/)
-[![Tests](https://img.shields.io/badge/tests-102%20passing-15803D?style=flat-square)](compiscript-ide-work/src/__tests__)
+[![Tests](https://img.shields.io/badge/tests-115%20passing-15803D?style=flat-square)](compiscript-ide-work/src/__tests__)
 
 [![Descargar versión portable](https://img.shields.io/badge/Descargar-Compiscript%20Semantic%20IDE%20V1.1.0-7C3AED?style=for-the-badge)](https://github.com/DanielBarillasM/Proyecto-01_CDC_seccion-10_Grupo-DragonsSlayers-2.0/releases/tag/Compiscript-Semantic-IDE-V1.1.0)
 
@@ -39,6 +39,19 @@ La distribución recomendada para Windows es **Compiscript Semantic IDE V1.1.0 P
 Compatibilidad prevista: Windows 10/11 de 64 bits. Como el ejecutable académico no posee una firma digital comercial, Windows SmartScreen puede solicitar confirmación antes de abrirlo.
 
 > La versión portable V1.1.0 representa el corte estable publicado. La rama `main` contiene refinamientos posteriores de interfaz, mantenimiento y documentación; para obtener exactamente el estado actual del repositorio debe ejecutarse `npm run exe:portable` desde el código fuente vigente.
+
+### Ejecutable para macOS y Linux
+
+No hay release publicado para macOS/Linux; se generan localmente en un minuto con Node instalado, sin Xcode ni herramientas de compilación adicionales:
+
+```bash
+cd compiscript-ide-work
+npm install
+npm run exe:mac     # macOS: .zip y .dmg sin firmar (Intel y Apple Silicon)
+npm run exe:linux   # Linux: AppImage x64, no requiere instalación
+```
+
+Los artefactos quedan en `compiscript-ide-work/release/`. Al igual que el portable de Windows, no llevan firma/notarización comercial: en macOS puede ser necesario click derecho → Abrir la primera vez (Gatekeeper); el AppImage solo necesita permiso de ejecución (`chmod +x`).
 
 ## Vista rápida
 
@@ -96,7 +109,7 @@ npm test
 npm run build
 ```
 
-Estado verificado del repositorio actual: **102 pruebas aprobadas en 5 suites**, comprobación de TypeScript sin errores y build de Vite completado con **3356 módulos transformados**.
+Estado verificado del repositorio actual: **115 pruebas aprobadas en 7 suites**, comprobación de TypeScript sin errores y build de Vite completado con **3368 módulos transformados**.
 
 Requisitos recomendados:
 
@@ -151,7 +164,9 @@ La vista semántica utiliza un workbench de tres áreas:
 
 1. una guía lateral explica el pipeline, los casos y la gramática activa;
 2. el editor concentra la escritura, carga y ejecución del programa;
-3. el explorador organiza resumen, diagnósticos, símbolos, ámbitos y árboles en pestañas.
+3. el explorador organiza resumen, diagnósticos, símbolos, ámbitos, árboles y **pruebas** en pestañas.
+
+La pestaña **Pruebas** (ícono de matraz) del explorador muestra, dentro del propio IDE, los mismos casos que corren en `npm test`: pruebas predeterminadas de lexer, parser y semántica que se ejecutan con un clic, cada una con su resultado esperado y notas de por qué falló si aplica. Cualquier prueba (predeterminada o propia) se puede eliminar, y el botón "Agregar prueba" permite escribir código, la fase y el resultado esperado (aceptado/rechazado, cantidad de errores, códigos `SEM`) para crear casos propios; las eliminaciones y adiciones se guardan en el navegador (`localStorage`) y "Restaurar predeterminadas" revierte los borrados.
 
 Atajos principales:
 
@@ -196,7 +211,7 @@ compiscript-ide-work/
 │   ├── lib/               pipeline, errores, árboles y exportaciones
 │   ├── semantic/          tipos, símbolos, declaraciones, flujo y Visitor
 │   ├── ui/                aplicación y componentes React
-│   └── __tests__/         suites de integración, semántica y rúbrica
+│   └── __tests__/         testers de lexer, parser, semántica y rúbrica
 ├── examples/
 │   ├── semantic/          casos vigentes del Proyecto 1
 │   ├── compiscript/       ejemplos integrados de la interfaz
@@ -250,11 +265,14 @@ npm run test:examples
 # Aplicación Electron
 npm run desktop
 
-# Artefactos de Windows
-npm run exe:portable
+# Artefactos de escritorio
+npm run exe:portable   # Windows portable (release V1.1.0)
+npm run exe:installer  # Windows NSIS (no recomendado para distribuir)
+npm run exe:mac        # macOS .zip / .dmg, x64 y arm64, sin firmar
+npm run exe:linux      # Linux AppImage x64
 ```
 
-El comando anterior genera la modalidad portable usada por el [release V1.1.0](https://github.com/DanielBarillasM/Proyecto-01_CDC_seccion-10_Grupo-DragonsSlayers-2.0/releases/tag/Compiscript-Semantic-IDE-V1.1.0). No se recomienda generar ni distribuir el instalador.
+`exe:portable` genera la modalidad usada por el [release V1.1.0](https://github.com/DanielBarillasM/Proyecto-01_CDC_seccion-10_Grupo-DragonsSlayers-2.0/releases/tag/Compiscript-Semantic-IDE-V1.1.0). `exe:mac` y `exe:linux` no requieren certificado de firma, igual que el portable de Windows.
 
 ## Decisiones frente al enunciado
 
@@ -284,14 +302,25 @@ cd compiscript-ide-work
 npm test
 ```
 
-La batería cubre:
+La batería (115 pruebas en 7 suites) separa un tester por fase para que cada uno sea identificable de forma independiente:
 
-- pipeline de lexer/parser;
-- ejemplos integrados y casos de rúbrica;
-- diagnósticos semánticos `SEM001`–`SEM023`;
-- operaciones directas de `ScopeManager`;
-- ejemplos de exposición por categoría;
-- regresiones de clases locales, inferencia y referencias.
+| Tester | Archivo | Fase | Cobertura |
+| --- | --- | --- | --- |
+| Lexer | [`src/__tests__/lexer.test.ts`](compiscript-ide-work/src/__tests__/lexer.test.ts) | léxico | tokenización, errores de reconocimiento, cadenas sin cerrar, escapes inválidos, límite de cascadas |
+| Parser | [`src/__tests__/parser.test.ts`](compiscript-ide-work/src/__tests__/parser.test.ts) | sintáctico | aceptación, CST, recuperación de errores, interacción lexer→parser |
+| Semántico | [`src/__tests__/semantic/`](compiscript-ide-work/src/__tests__/semantic/) (`semanticAnalyzer`, `scopeManager`, `projectExamples`) | semántico | `SEM001`–`SEM023`, `ScopeManager` (insertar/recuperar/actualizar/ámbitos), closures, herencia, ejemplos de exposición |
+| Rúbrica | [`src/__tests__/rubric.examples.test.ts`](compiscript-ide-work/src/__tests__/rubric.examples.test.ts) | léxico + sintáctico | matriz de complejidad baja/media, posiciones exactas de error |
+| Casos por defecto del panel del IDE | [`src/__tests__/testCases.defaults.test.ts`](compiscript-ide-work/src/__tests__/testCases.defaults.test.ts) | lexer + parser + semántico + rúbrica | garantiza que la pestaña **Pruebas** del IDE (ver más abajo) no muestre en rojo un caso predeterminado |
+
+```bash
+npx vitest run src/__tests__/lexer.test.ts              # solo el tester léxico
+npx vitest run src/__tests__/parser.test.ts              # solo el tester sintáctico
+npx vitest run src/__tests__/semantic                    # solo el tester semántico
+```
+
+### Ver los testers desde el IDE
+
+Los mismos casos también son visibles y ejecutables sin terminal: pestaña **Pruebas** del explorador (panel derecho), agrupados por lexer/parser/semántico/rúbrica, con botón "Ejecutar todas" y estado ✔/✘ por caso. Ver [Interfaz orientada a la explicación](#interfaz-orientada-a-la-explicación).
 
 ## Nota sobre ANTLR
 

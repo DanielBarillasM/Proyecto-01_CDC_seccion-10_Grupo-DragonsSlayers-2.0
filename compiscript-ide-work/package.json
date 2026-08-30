@@ -21,6 +21,8 @@
     "desktop": "npm run build && electron .",
     "exe:portable": "npm run build && electron-builder --win portable --x64",
     "exe:installer": "npm run build && electron-builder --win nsis --x64",
+    "exe:mac": "npm run build && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac --x64 --arm64",
+    "exe:linux": "npm run build && electron-builder --linux --x64",
     "cli:semantic-valid": "tsx src/cli/run.ts examples/semantic/valid_complete.cps --mode semantic",
     "cli:semantic-errors": "tsx src/cli/run.ts examples/semantic/semantic_errors.cps --mode semantic",
     "cli:semantic-symbols": "tsx src/cli/run.ts examples/semantic/symbol_table_demo.cps --mode semantic"
@@ -49,6 +51,17 @@
     },
     "portable": {
       "artifactName": "Compiscript-Portable-${version}.${ext}"
+    },
+    "mac": {
+      "target": ["zip", "dmg"],
+      "category": "public.app-category.developer-tools",
+      "identity": null,
+      "artifactName": "Compiscript-${version}-${arch}.${ext}"
+    },
+    "linux": {
+      "target": ["AppImage"],
+      "category": "Development",
+      "artifactName": "Compiscript-${version}-${arch}.${ext}"
     }
   },
   "dependencies": {

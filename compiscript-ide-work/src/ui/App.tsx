@@ -205,6 +205,7 @@ export function App() {
               activeTab={activeDockTab}
               onTabChange={setActiveDockTab}
               onSelectScope={setScopeChain}
+              onLoadTestSource={handleLoadFile}
             />
           </ResizablePanel>
         </ResizablePanelGroup>

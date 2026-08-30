@@ -286,7 +286,7 @@
           <span class="kicker">Construcción de Compiladores</span>
           <h1>Compiscript<br><span class="accent">Semantic IDE</span></h1>
           <p class="lead">Análisis léxico, sintáctico y semántico con ANTLR 4, TypeScript, tabla de símbolos y ámbitos léxicos.</p>
-          <div class="chips"><span class="chip">ANTLR 4</span><span class="chip">React + Vite</span><span class="chip">TypeScript</span><span class="chip">Electron</span><span class="chip">102 pruebas</span></div>
+          <div class="chips"><span class="chip">ANTLR 4</span><span class="chip">React + Vite</span><span class="chip">TypeScript</span><span class="chip">Electron</span><span class="chip">115 pruebas</span></div>
         </div>
         <aside class="speaker-note">Presente el objetivo general: transformar un archivo .cps en información semántica explicable y verificable.</aside>
       </section>
@@ -482,14 +482,14 @@ ifStatement
           <span class="kicker">11 · Calidad</span>
           <h2>La cobertura se demuestra con casos reproducibles</h2>
           <div class="grid-4">
-            <article class="card stat"><strong>102</strong><span>pruebas aprobadas</span><small>5 suites Vitest</small></article>
-            <article class="card stat"><strong>5</strong><span>archivos de prueba</span><small>pipeline + semántica</small></article>
+            <article class="card stat"><strong>115</strong><span>pruebas aprobadas</span><small>7 suites Vitest</small></article>
+            <article class="card stat"><strong>7</strong><span>archivos de prueba</span><small>lexer + parser + semántica + rúbrica</small></article>
             <article class="card stat"><strong>23</strong><span>códigos semánticos</span><small>SEM001–SEM023</small></article>
             <article class="card stat"><strong>4</strong><span>operaciones de tabla</span><small>rúbrica directa</small></article>
           </div>
           <table class="rule-table">
             <thead><tr><th>Categoría</th><th>Casos válidos</th><th>Casos fallidos</th><th>Evidencia</th></tr></thead>
-            <tbody><tr><td>Tipos</td><td>promoción, lógica, listas</td><td>operadores, asignación, índices</td><td>semanticAnalyzer.test.ts</td></tr><tr><td>Ámbitos</td><td>shadowing y padres</td><td>redeclaración y escape</td><td>scopeManager.test.ts</td></tr><tr><td>Funciones y clases</td><td>recursión, closures, herencia</td><td>argumentos, retorno, miembros</td><td>semanticAnalyzer.test.ts</td></tr><tr><td>Lexer y parser</td><td>programas integrales</td><td>errores recuperables</td><td>analyze.compiscript.test.ts</td></tr></tbody>
+            <tbody><tr><td>Tipos</td><td>promoción, lógica, listas</td><td>operadores, asignación, índices</td><td>semanticAnalyzer.test.ts</td></tr><tr><td>Ámbitos</td><td>shadowing y padres</td><td>redeclaración y escape</td><td>scopeManager.test.ts</td></tr><tr><td>Funciones y clases</td><td>recursión, closures, herencia</td><td>argumentos, retorno, miembros</td><td>semanticAnalyzer.test.ts</td></tr><tr><td>Lexer</td><td>tokenización</td><td>errores léxicos recuperables</td><td>lexer.test.ts</td></tr><tr><td>Parser</td><td>programas integrales</td><td>errores sintácticos recuperables</td><td>parser.test.ts</td></tr></tbody>
           </table>
         </div>
       </section>
