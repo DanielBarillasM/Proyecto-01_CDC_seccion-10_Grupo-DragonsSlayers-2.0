@@ -53,6 +53,8 @@ npm run exe:linux   # Linux: AppImage x64, no requiere instalación
 
 Los artefactos quedan en `compiscript-ide-work/release/`. Al igual que el portable de Windows, no llevan firma/notarización comercial: en macOS puede ser necesario click derecho → Abrir la primera vez (Gatekeeper); el AppImage solo necesita permiso de ejecución (`chmod +x`).
 
+Verificado en macOS (arm64, Electron directo) y en Linux nativo (arm64, dentro de un contenedor con Xvfb): la aplicación arranca, renderiza el IDE completo y no genera errores además de avisos benignos de D-Bus ausente en entornos mínimos. Si el AppImage falla con `libz.so: cannot open shared object file`, instale zlib (`apt install zlib1g` deja solo `libz.so.1`; los escritorios Linux habituales ya traen la variante sin versión, los contenedores mínimos no).
+
 ## Vista rápida
 
 | IDE | Análisis semántico | Tabla de símbolos |
