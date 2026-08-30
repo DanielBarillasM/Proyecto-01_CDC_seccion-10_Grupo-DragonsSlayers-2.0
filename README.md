@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="compiscript-ide-work/presentation/assets/compiler-pipeline-hero.png" alt="Pipeline de compilación de Compiscript" width="860">
+<img src="compiscript-ide-work/presentation/assets/compiler-pipeline-neobrutalist.png" alt="Referencia visual neobrutalista del pipeline de Compiscript" width="860">
 
 # Compiscript Semantic IDE
 
@@ -13,7 +13,7 @@ IDE académico para ejecutar y explicar las fases léxica, sintáctica y semánt
 [![React](https://img.shields.io/badge/React-19-149ECA?style=flat-square&logo=react&logoColor=white)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite-6-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vite.dev/)
 [![Electron](https://img.shields.io/badge/Electron-Desktop-47848F?style=flat-square&logo=electron&logoColor=white)](https://www.electronjs.org/)
-[![Tests](https://img.shields.io/badge/tests-105%20passing-15803D?style=flat-square)](compiscript-ide-work/src/__tests__)
+[![Tests](https://img.shields.io/badge/tests-102%20passing-15803D?style=flat-square)](compiscript-ide-work/src/__tests__)
 
 [![Descargar versión portable](https://img.shields.io/badge/Descargar-Compiscript%20Semantic%20IDE%20V1.1.0-7C3AED?style=for-the-badge)](https://github.com/DanielBarillasM/Proyecto-01_CDC_seccion-10_Grupo-DragonsSlayers-2.0/releases/tag/Compiscript-Semantic-IDE-V1.1.0)
 
@@ -37,6 +37,8 @@ La distribución recomendada para Windows es **Compiscript Semantic IDE V1.1.0 P
 > El instalador tradicional no se distribuye ni se recomienda para esta versión porque presentó problemas durante la instalación y ejecución. El release incluye únicamente la modalidad portable, que evita modificar el sistema y puede eliminarse borrando su archivo.
 
 Compatibilidad prevista: Windows 10/11 de 64 bits. Como el ejecutable académico no posee una firma digital comercial, Windows SmartScreen puede solicitar confirmación antes de abrirlo.
+
+> La versión portable V1.1.0 representa el corte estable publicado. La rama `main` contiene refinamientos posteriores de interfaz, mantenimiento y documentación; para obtener exactamente el estado actual del repositorio debe ejecutarse `npm run exe:portable` desde el código fuente vigente.
 
 ## Vista rápida
 
@@ -94,6 +96,8 @@ npm test
 npm run build
 ```
 
+Estado verificado del repositorio actual: **102 pruebas aprobadas en 5 suites**, comprobación de TypeScript sin errores y build de Vite completado con **3356 módulos transformados**.
+
 Requisitos recomendados:
 
 - Node.js 20 o superior;
@@ -119,6 +123,12 @@ Requisitos recomendados:
 - conteo de referencias y variables capturadas por closures;
 - identidades de clase independientes del nombre textual.
 
+<div align="center">
+
+<img src="compiscript-ide-work/presentation/assets/scopes-symbol-table-neobrutalist.png" alt="Referencia visual neobrutalista de ámbitos y tabla de símbolos" width="860">
+
+</div>
+
 ### Funciones y flujo
 
 - firmas, parámetros, aridad y tipos posicionales;
@@ -137,7 +147,7 @@ Requisitos recomendados:
 
 ## Interfaz orientada a la explicación
 
-La vista semántica utiliza un workbench de dos áreas:
+La vista semántica utiliza un workbench de tres áreas:
 
 1. una guía lateral explica el pipeline, los casos y la gramática activa;
 2. el editor concentra la escritura, carga y ejecución del programa;
@@ -182,7 +192,7 @@ La tabla de códigos esperados y los comandos completos están en [examples/sema
 compiscript-ide-work/
 ├── src/
 │   ├── grammars/          fuente ANTLR
-│   ├── generated/         lexer, parser, Listener y Visitor generados
+│   ├── generated/         lexer, parser y Visitor generados
 │   ├── lib/               pipeline, errores, árboles y exportaciones
 │   ├── semantic/          tipos, símbolos, declaraciones, flujo y Visitor
 │   ├── ui/                aplicación y componentes React

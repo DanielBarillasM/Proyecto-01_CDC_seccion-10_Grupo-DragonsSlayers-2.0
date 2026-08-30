@@ -1,5 +1,7 @@
 # Auditoría técnica del Proyecto 1
 
+**Última verificación:** 29 de agosto de 2026, sobre `main` en el commit `46ddbf5`.
+
 ## Resultado ejecutivo
 
 La revisión contrastó el proyecto con el README del lenguaje, la gramática ANTLR, los requisitos de análisis semántico y la rúbrica proporcionada. Se conservó la arquitectura real React + Vite + TypeScript + Electron y se corrigieron defectos de semántica, gramática, casos integrados, experiencia de uso y documentación.
@@ -7,7 +9,7 @@ La revisión contrastó el proyecto con el README del lenguaje, la gramática AN
 Estado final verificado:
 
 - `npm run check`: aprobado;
-- `npm test`: 105 de 105 pruebas aprobadas en 6 suites;
+- `npm test`: 102 de 102 pruebas aprobadas en 5 suites;
 - `npm run build`: aprobado;
 - parser regenerado desde la gramática activa;
 - presentación HTML con 17 diapositivas y dos ilustraciones locales;
@@ -57,15 +59,14 @@ Si lexer o parser producen errores, el análisis semántico no se ejecuta. Esta 
 | `scopeManager.test.ts` | 4 |
 | `analyze.compiscript.test.ts` | 14 |
 | `rubric.examples.test.ts` | 8 |
-| `examples.sync.test.ts` | 3 |
 | `projectExamples.test.ts` | 8 |
-| Total | 105 |
+| Total | 102 |
 
 Las pruebas semánticas incluyen programas válidos, diagnósticos `SEM001`–`SEM023`, flujo, arreglos, funciones, closures, herencia, constructores, identidad de clases, inferencia y referencias. La suite de ejemplos garantiza además que los archivos de exposición siguen siendo ejecutables y producen sus códigos documentados. Las pruebas directas de tabla de símbolos demuestran las cuatro operaciones solicitadas en la rúbrica: insertar, recuperar, actualizar y manejar alcances.
 
 ## Build
 
-El build de producción transforma 3352 módulos y finaliza correctamente. Vite advierte que el chunk JavaScript principal supera 500 kB; es una recomendación de optimización, no un error funcional. El volumen proviene de Monaco Editor, que se empaqueta localmente para funcionar sin CDN.
+El build de producción transforma 3356 módulos y finaliza correctamente. Vite advierte que el chunk JavaScript principal supera 500 kB; es una recomendación de optimización, no un error funcional. El volumen proviene de Monaco Editor, que se empaqueta localmente para funcionar sin CDN.
 
 ## Límite de esta auditoría
 

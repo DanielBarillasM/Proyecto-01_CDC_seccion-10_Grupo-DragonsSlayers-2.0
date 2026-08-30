@@ -97,6 +97,8 @@ Las referencias a variables, clases, campos y métodos incrementan el contador d
 - `RightDock`, que organiza `ResultOverviewPanel`, `SymbolTablePanel`, `ScopeTreePanel`, `ParseTreePanel`, `DocumentationPanel` y `ExportsPanel`;
 - `StatusBar` y `CommandPalette` para estado y acciones rápidas.
 
+La capa visual vigente adopta un lenguaje neobrutalista: fondo crema, superficies blancas o amarillas, bordes negros de dos píxeles, esquinas rectas y sombras sólidas desplazadas. Las ilustraciones documentales `compiler-pipeline-neobrutalist.png` y `scopes-symbol-table-neobrutalist.png` reproducen esa misma jerarquía visual como referencias conceptuales; no pretenden ser capturas literales de la aplicación.
+
 La interfaz no decide si un programa es válido. Su responsabilidad es explicar resultados ya calculados por el motor.
 
 ## Invariantes del sistema
@@ -113,7 +115,7 @@ La interfaz no decide si un programa es válido. Su responsabilidad es explicar 
 
 `src/__tests__/semantic/semanticAnalyzer.test.ts` contiene programas de éxito, un caso por diagnóstico y regresiones de flujo, clases, funciones y arreglos. `scopeManager.test.ts` prueba de forma directa inserción, recuperación, actualización y manejo de alcances, que son operaciones explícitas de la rúbrica.
 
-Las suites adicionales verifican el pipeline general, los archivos de ejemplo y los casos de rúbrica. La cantidad final se registra en `AUDITORIA_PROYECTO_1.md` después de ejecutar Vitest.
+Las suites adicionales verifican el pipeline general, los archivos de ejemplo y los casos de rúbrica. La versión actual ejecuta 102 pruebas en 5 suites. La antigua suite de sincronización de ejemplos se retiró cuando `src/lib/examples.ts` empezó a importar directamente los archivos `.cps` mediante `?raw`, eliminando la duplicación que aquella prueba controlaba.
 
 ## Extensión futura
 

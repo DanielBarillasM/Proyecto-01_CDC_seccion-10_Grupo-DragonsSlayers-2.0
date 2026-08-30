@@ -84,8 +84,8 @@
   \vspace{0.25cm}
   {\Large Análisis semántico, tabla de símbolos e IDE\par}
   \vspace{0.7cm}
-  \IfFileExists{../../presentation/assets/compiler-pipeline-hero.png}{
-    \includegraphics[width=0.84\textwidth]{../../presentation/assets/compiler-pipeline-hero.png}
+  \IfFileExists{../../presentation/assets/compiler-pipeline-neobrutalist.png}{
+    \includegraphics[width=0.84\textwidth]{../../presentation/assets/compiler-pipeline-neobrutalist.png}
   }{
     \fbox{\parbox{0.8\textwidth}{\centering
       Código fuente $\rightarrow$ análisis léxico $\rightarrow$ análisis sintáctico
@@ -139,7 +139,7 @@ identidad de clases, la detección de código inalcanzable, el catálogo
 presentan diagramas vectoriales, ejemplos reproducibles, una matriz de trazabilidad y
 la estrategia de pruebas.
 
-La versión documentada reporta \textbf{105 pruebas aprobadas en 6 suites}, generación
+La versión documentada reporta \textbf{102 pruebas aprobadas en 5 suites}, generación
 reproducible de ANTLR, comprobación TypeScript y build de producción exitosos. El
 alcance concluye en el análisis semántico: no se interpreta el programa, no se genera
 código intermedio y no se produce código de máquina.
@@ -161,7 +161,7 @@ The system exposes a unified result model to a React web interface, a command-li
 client and an Electron desktop application. Its semantic infrastructure includes
 symbol insertion, lookup, controlled updates, nested scopes, references, closure
 captures, class identity, inheritance and return-type inference. The implementation
-is validated by 105 automated tests distributed across six suites. This document
+is validated by 102 automated tests distributed across five suites. This document
 combines theoretical background, implementation details, diagrams, reproducible
 examples, traceability and operational instructions.
 
@@ -517,7 +517,7 @@ compiscript-ide-work/
 |-- presentation/         presentación e imágenes
 |-- public/               recursos del frontend
 |-- src/
-|   |-- __tests__/        seis suites Vitest
+|   |-- __tests__/        cinco suites Vitest
 |   |-- cli/run.ts        cliente de consola
 |   |-- generated/        salida de ANTLR
 |   |-- grammars/         gramática fuente
@@ -611,25 +611,31 @@ LaTeX + TikZ & TeX Live & documentación vectorial \\
 \caption{Dependencias tecnológicas principales.}
 \end{table}
 
-\section{Recursos visuales existentes}
+\section{Recursos visuales de referencia}
 
 \begin{figure}[H]
   \centering
-  \IfFileExists{../../presentation/assets/compiler-pipeline-hero.png}{
-    \includegraphics[width=0.9\textwidth]{../../presentation/assets/compiler-pipeline-hero.png}
+  \IfFileExists{../../presentation/assets/compiler-pipeline-neobrutalist.png}{
+    \includegraphics[width=0.9\textwidth]{../../presentation/assets/compiler-pipeline-neobrutalist.png}
   }{\fbox{\parbox{0.85\textwidth}{Imagen del pipeline no encontrada.}}}
-  \caption{Ilustración existente del pipeline de Compiscript.}
+  \caption{Referencia visual neobrutalista del pipeline de Compiscript.}
   \label{fig:pipeline-hero}
 \end{figure}
 
 \begin{figure}[H]
   \centering
-  \IfFileExists{../../presentation/assets/scopes-symbol-table.png}{
-    \includegraphics[width=0.88\textwidth]{../../presentation/assets/scopes-symbol-table.png}
+  \IfFileExists{../../presentation/assets/scopes-symbol-table-neobrutalist.png}{
+    \includegraphics[width=0.88\textwidth]{../../presentation/assets/scopes-symbol-table-neobrutalist.png}
   }{\fbox{\parbox{0.85\textwidth}{Imagen de ámbitos no encontrada.}}}
-  \caption{Ilustración existente de ámbitos y tabla de símbolos.}
+  \caption{Referencia visual neobrutalista de ámbitos y tabla de símbolos.}
   \label{fig:scopes-image}
 \end{figure}
+
+Ambas piezas siguen la identidad visual neobrutalista de la interfaz vigente:
+fondos crema, superficies blancas y amarillas, bordes negros gruesos, esquinas
+rectas y sombras sólidas desplazadas. Funcionan como referencias conceptuales para
+explicar el sistema; no sustituyen las capturas ni los resultados producidos por una
+ejecución real del IDE.
 
 \chapter{Implementación léxica y sintáctica}
 
@@ -1502,15 +1508,20 @@ Suite & Cantidad & Cobertura principal \\
 \archivo{scopeManager.test.ts} & 4 & insertar, recuperar, actualizar y scopes \\
 \archivo{analyze.compiscript.test.ts} & 14 & lexer, parser y pipeline \\
 \archivo{rubric.examples.test.ts} & 8 & matriz léxica/sintáctica heredada \\
-\archivo{examples.sync.test.ts} & 3 & sincronización de ejemplos integrados \\
 \archivo{projectExamples.test.ts} & 8 & archivos semánticos de demostración \\
 \midrule
-\textbf{Total} & \textbf{105} & seis suites aprobadas \\
+\textbf{Total} & \textbf{102} & cinco suites aprobadas \\
 \bottomrule
 \end{tabularx}
 \caption{Distribución de pruebas de la versión documentada.}
 \label{tab:test-count}
 \end{table}
+
+La suite histórica \archivo{examples.sync.test.ts} se retiró cuando los ejemplos
+integrados dejaron de duplicarse en cadenas TypeScript y pasaron a importarse
+directamente desde los archivos \archivo{.cps} mediante \codigo{?raw}. La reducción
+de 105 a 102 pruebas elimina una comprobación redundante, no cobertura funcional de
+las reglas del lenguaje.
 
 \section{Pruebas de ScopeManager}
 
@@ -1591,7 +1602,7 @@ porque el bundle principal supera 500 kB.
 \toprule
 Criterio & Evidencia \\
 \midrule
-Corrección & reglas y 105 pruebas \\
+Corrección & reglas y 102 pruebas \\
 Reproducibilidad & gramática, lockfile y scripts \\
 Trazabilidad & códigos, ubicaciones, IDs y matriz \\
 Modularidad & separación lib/semantic/ui \\
@@ -1650,7 +1661,7 @@ Requisito & Evidencia & Estado \\
 Parser generado & gramática y \archivo{src/generated} & \estado{Cubierto} \\
 Recorrido Visitor & \archivo{semanticVisitor.ts} & \estado{Cubierto} \\
 Árbol visual & CST y árbol semántico & \estado{Cubierto} \\
-Casos de prueba & seis suites y ejemplos & \estado{Cubierto} \\
+Casos de prueba & cinco suites y ejemplos & \estado{Cubierto} \\
 Tabla de símbolos & \archivo{scopes.ts} y panel UI & \estado{Cubierto} \\
 IDE & React/Vite y Electron & \estado{Cubierto} \\
 Documentación & informe, matriz y decisiones & \estado{Cubierto} \\
@@ -1834,7 +1845,7 @@ tipos, símbolos y diagnósticos; y la UI presenta el resultado sin duplicar reg
 
 La tabla de símbolos demuestra las operaciones requeridas y agrega referencias,
 capturas e identidad. El árbol semántico permite observar el significado calculado.
-Los ejemplos y 105 pruebas convierten los requisitos en evidencia repetible.
+Los ejemplos y 102 pruebas convierten los requisitos en evidencia repetible.
 
 \section{Limitaciones}
 
@@ -1899,7 +1910,7 @@ la entrada.
         pruebas.
   \item La visualización conjunta de CST, árbol semántico, scopes y símbolos convierte
         el IDE en una herramienta pedagógica.
-  \item Las 105 pruebas y los archivos de demostración permiten repetir la evidencia
+  \item Las 102 pruebas y los archivos de demostración permiten repetir la evidencia
         técnica y proteger regresiones.
 \end{enumerate}
 
@@ -2051,7 +2062,7 @@ Comando & Propósito \\
 \codigo{npm run generate} & regenerar ANTLR \\
 \codigo{npm run dev} & iniciar Vite \\
 \codigo{npm run check} & comprobar TypeScript \\
-\codigo{npm test} & ejecutar 105 pruebas \\
+\codigo{npm test} & ejecutar 102 pruebas \\
 \codigo{npm run test:examples} & ejecutar casos semánticos en disco \\
 \codigo{npm run build} & construir producción web \\
 \codigo{npm run preview} & servir el build \\
@@ -2101,7 +2112,7 @@ Modos & lexer, parser y semantic \\
 Tipos & primitivos, arreglos, funciones, clases e instancias \\
 Scopes & global, bloque, función, clase, ciclo, catch y switch \\
 Diagnósticos & \diag{SEM001}--\diag{SEM023} \\
-Pruebas & 105 en 6 suites \\
+Pruebas & 102 en 5 suites \\
 Salidas & UI, CLI, CSV, JSON, TXT y árboles \\
 Plataforma empaquetada & Windows x64 \\
 Alcance & frente hasta análisis semántico \\

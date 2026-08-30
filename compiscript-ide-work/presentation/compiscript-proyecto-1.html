@@ -181,6 +181,94 @@
       .topbar, .footer-controls, .progress, .speaker-note { display: none !important; }
       .slide { position: relative; inset: auto; width: 100%; min-height: 100vh; page-break-after: always; opacity: 1; transform: none; pointer-events: auto; }
     }
+
+    /* Identidad visual vigente del IDE: neobrutalismo crema, amarillo y negro. */
+    :root {
+      color-scheme: light;
+      --ink: #000;
+      --muted: #6b6355;
+      --subtle: #847b6b;
+      --base: #fff7e8;
+      --panel: #fff;
+      --line: #000;
+      --cyan: #000;
+      --blue: #ffdc58;
+      --violet: #7c2d12;
+      --green: #15803d;
+      --amber: #ffdc58;
+      --red: #e63946;
+      --sans: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+      --mono: "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+    }
+    html, body { background: var(--base); color: var(--ink); }
+    .deck { background: var(--base); }
+    .deck::before {
+      opacity: .18;
+      background-image: linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px);
+      background-size: 44px 44px;
+      mask-image: linear-gradient(to bottom, black, transparent 90%);
+    }
+    .topbar, .footer-controls {
+      color: #000;
+      background: #fff;
+      border-color: #000;
+      border-width: 0 0 3px;
+      backdrop-filter: none;
+    }
+    .footer-controls { border-width: 3px 0 0; }
+    .brand { font-weight: 950; text-transform: uppercase; }
+    .brand-mark {
+      color: #000;
+      background: #ffdc58;
+      border: 2px solid #000;
+      border-radius: 0;
+      box-shadow: 3px 3px 0 #000;
+    }
+    .top-meta strong { color: #000; }
+    .progress { top: 58px; height: 5px; background: #ffdc58; border-bottom: 2px solid #000; }
+    .kicker, .accent { color: #000; }
+    .accent { display: inline; background: #ffdc58; box-shadow: 4px 4px 0 #000; padding: 0 .12em; }
+    .hero-slide::after { background: linear-gradient(90deg, rgba(255,247,232,.99) 0%, rgba(255,247,232,.96) 40%, rgba(255,247,232,.18) 72%); }
+    .hero-slide img { filter: saturate(.96) contrast(1.02); }
+    .chip, .card, .pipeline-step, .module, .diag, .check, .demo-flow li,
+    .mock-app, .mock-side, .mock-main, .mock-result, .nav-button, body.overview .slide {
+      color: #000;
+      background: #fff;
+      border: 2px solid #000;
+      border-radius: 0;
+      box-shadow: 5px 5px 0 #000;
+    }
+    .chip { background: #ffe7a3; color: #000; }
+    .card-number, .pipeline-step strong, .module span, .stat strong, .demo-flow li::before {
+      color: #000;
+      background: #ffdc58;
+      padding: .18em .35em;
+    }
+    .code { color: #fff7e8; background: #1a1815; border: 3px solid #000; border-radius: 0; box-shadow: 6px 6px 0 #ffdc58; }
+    .code .kw { color: #ffdc58; }
+    .code .type { color: #fff; }
+    .code .lit { color: #86efac; }
+    .visual { border: 3px solid #000; border-radius: 0; box-shadow: 9px 9px 0 #000; }
+    .type-table th, .type-table td, .rule-table th, .rule-table td { border-bottom: 2px solid #000; }
+    .type-table th, .rule-table th { color: #000; background: #ffdc58; }
+    .type-table code, .rule-table code { color: #7c2d12; }
+    .scope-box { color: #000; background: #fff; border: 3px solid #000; border-radius: 0; box-shadow: 5px 5px 0 #000; }
+    .scope-class { background: #fff3c4; }
+    .scope-function { background: #ffe7a3; }
+    .scope-block { background: #ffdc58; }
+    .mock-app { background: #fff7e8; }
+    .mock-side, .mock-main, .mock-result { box-shadow: 3px 3px 0 #000; }
+    .mock-side i { border: 2px solid #000; border-radius: 0; background: #ffe7a3; }
+    .mock-editor { border: 2px solid #000; border-radius: 0; background: repeating-linear-gradient(#2e2a24 0 2px, transparent 2px 20px), #1a1815; }
+    .mock-result::before, .mock-result::after { border: 2px solid #000; border-radius: 0; background: #ffdc58; }
+    .check b { color: #000; background: #ffdc58; border: 2px solid #000; border-radius: 0; }
+    .check small { color: #15803d; }
+    .nav-button { background: #ffdc58; cursor: pointer; }
+    .nav-button:hover { color: #000; background: #ffd12e; transform: translate(-1px, -1px); box-shadow: 6px 6px 0 #000; }
+    .speaker-note { color: #000; background: #ffdc58; border: 3px solid #000; border-radius: 0; box-shadow: 7px 7px 0 #000; }
+    @media (max-width: 620px) {
+      .hero-slide::after { background: rgba(255,247,232,.9); }
+    }
   </style>
 </head>
 <body>
@@ -193,12 +281,12 @@
 
     <div class="slides" id="slides">
       <section class="slide hero-slide active" data-title="Portada">
-        <img src="assets/compiler-pipeline-hero.png" alt="Ilustración del flujo de código hacia tokens, árbol y red semántica.">
+        <img src="assets/compiler-pipeline-neobrutalist.png" alt="Referencia visual neobrutalista del flujo de código hacia tokens, árbol y semántica.">
         <div class="hero-copy">
           <span class="kicker">Construcción de Compiladores</span>
           <h1>Compiscript<br><span class="accent">Semantic IDE</span></h1>
           <p class="lead">Análisis léxico, sintáctico y semántico con ANTLR 4, TypeScript, tabla de símbolos y ámbitos léxicos.</p>
-          <div class="chips"><span class="chip">ANTLR 4</span><span class="chip">React + Vite</span><span class="chip">TypeScript</span><span class="chip">Electron</span><span class="chip">105 pruebas</span></div>
+          <div class="chips"><span class="chip">ANTLR 4</span><span class="chip">React + Vite</span><span class="chip">TypeScript</span><span class="chip">Electron</span><span class="chip">102 pruebas</span></div>
         </div>
         <aside class="speaker-note">Presente el objetivo general: transformar un archivo .cps en información semántica explicable y verificable.</aside>
       </section>
@@ -331,7 +419,7 @@ ifStatement
               <article class="card"><h3>enter / exit</h3><p>Construye el árbol de bloques, funciones, clases y ciclos.</p></article>
             </div>
           </div>
-          <img class="visual" src="assets/scopes-symbol-table.png" alt="Ilustración de ámbitos anidados conectados con tablas de símbolos.">
+          <img class="visual" src="assets/scopes-symbol-table-neobrutalist.png" alt="Referencia visual neobrutalista de ámbitos anidados conectados con la tabla de símbolos.">
         </div>
       </section>
 
@@ -394,7 +482,7 @@ ifStatement
           <span class="kicker">11 · Calidad</span>
           <h2>La cobertura se demuestra con casos reproducibles</h2>
           <div class="grid-4">
-            <article class="card stat"><strong>105</strong><span>pruebas aprobadas</span><small>Vitest</small></article>
+            <article class="card stat"><strong>102</strong><span>pruebas aprobadas</span><small>5 suites Vitest</small></article>
             <article class="card stat"><strong>5</strong><span>archivos de prueba</span><small>pipeline + semántica</small></article>
             <article class="card stat"><strong>23</strong><span>códigos semánticos</span><small>SEM001–SEM023</small></article>
             <article class="card stat"><strong>4</strong><span>operaciones de tabla</span><small>rúbrica directa</small></article>
