@@ -1,6 +1,6 @@
 # Auditoría técnica del Proyecto 1
 
-**Última verificación:** 29 de agosto de 2026, tras incorporar el panel de pruebas del IDE y el empaquetado macOS/Linux sobre `main`.
+**Última verificación:** 30 de agosto de 2026, sobre `main` en el commit `4d93279`, tras incorporar el panel de pruebas del IDE y el empaquetado macOS/Linux.
 
 ## Resultado ejecutivo
 
@@ -9,11 +9,12 @@ La revisión contrastó el proyecto con el README del lenguaje, la gramática AN
 Estado final verificado:
 
 - `npm run check`: aprobado;
-- `npm test`: 115 de 115 pruebas aprobadas en 7 suites (lexer, parser, semántica x3, rúbrica);
+- `npm test`: 115 de 115 pruebas aprobadas en 7 suites (lexer, parser, casos del panel, semántica x3 y rúbrica);
 - `npm run build`: aprobado;
 - parser regenerado desde la gramática activa;
 - presentación HTML con 17 diapositivas y dos ilustraciones locales;
 - informe LaTeX y matriz de requisitos añadidos.
+- [release V1.2.0](https://github.com/DanielBarillasM/Proyecto-01_CDC_seccion-10_Grupo-DragonsSlayers-2.0/releases/tag/Compiscript-Semantic-IDE-V1.2.0) enlazado como último corte portable publicado.
 
 ## Hallazgos y correcciones
 
@@ -68,7 +69,13 @@ Las pruebas semánticas incluyen programas válidos, diagnósticos `SEM001`–`S
 
 ## Build
 
-El build de producción transforma 3356 módulos y finaliza correctamente. Vite advierte que el chunk JavaScript principal supera 500 kB; es una recomendación de optimización, no un error funcional. El volumen proviene de Monaco Editor, que se empaqueta localmente para funcionar sin CDN.
+El build de producción transforma 3368 módulos y finaliza correctamente. Vite advierte que el chunk JavaScript principal supera 500 kB; es una recomendación de optimización, no un error funcional. El volumen proviene de Monaco Editor, que se empaqueta localmente para funcionar sin CDN.
+
+## Empaquetado multiplataforma
+
+`npm run exe:portable` genera el portable Windows x64; `npm run exe:mac` genera ZIP y DMG sin firma para Intel y Apple Silicon; `npm run exe:linux` genera AppImage x64. Los paquetes macOS se producen en una Mac o runner macOS. El AppImage puede generarse en Linux, WSL o Docker; el intento directo sobre NTFS puede fallar por permisos de enlaces simbólicos. El arranque de la aplicación fue verificado en macOS arm64 mediante Electron directo y en Linux arm64 dentro de un contenedor con Xvfb. Los avisos de D-Bus en entornos mínimos no afectan el IDE. Si un AppImage ejecutado en un sistema mínimo informa que falta `libz.so`, debe instalarse o exponerse la variante de desarrollo de zlib; los escritorios Linux habituales ya la proporcionan.
+
+El [release V1.2.0](https://github.com/DanielBarillasM/Proyecto-01_CDC_seccion-10_Grupo-DragonsSlayers-2.0/releases/tag/Compiscript-Semantic-IDE-V1.2.0) es el último corte portable publicado. El panel de pruebas y el empaquetado macOS/Linux pertenecen a commits posteriores de `main`, por lo que deben compilarse desde el código fuente vigente si se necesita exactamente esa versión.
 
 ## Límite de esta auditoría
 

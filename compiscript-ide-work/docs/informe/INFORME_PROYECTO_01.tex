@@ -140,7 +140,8 @@ presentan diagramas vectoriales, ejemplos reproducibles, una matriz de trazabili
 la estrategia de pruebas.
 
 La versión documentada reporta \textbf{115 pruebas aprobadas en 7 suites}, generación
-reproducible de ANTLR, comprobación TypeScript y build de producción exitosos. El
+reproducible de ANTLR, comprobación TypeScript y build de producción exitoso con
+\textbf{3368 módulos transformados}. El
 alcance concluye en el análisis semántico: no se interpreta el programa, no se genera
 código intermedio y no se produce código de máquina.
 
@@ -1466,6 +1467,23 @@ Intel y Apple Silicon, y \codigo{npm run exe:linux} produce un \archivo{AppImage
 x64. Los tres se generan sin certificado comercial de firma, igual que la
 distribución portable de Windows. Los artefactos quedan en \archivo{release}. El
 usuario final no necesita Node ni Java; Java solo interviene al regenerar ANTLR.
+
+Los targets macOS se construyen en una Mac o en un runner macOS. El AppImage se
+construye en Linux nativo, WSL o Docker; intentar producirlo directamente sobre NTFS
+puede fallar cuando la herramienta crea enlaces simbólicos. Esta separación conserva
+los permisos y utilidades propias de cada plataforma.
+
+El último corte portable publicado para Windows es Compiscript Semantic IDE V1.2.0:
+\url{https://github.com/DanielBarillasM/Proyecto-01_CDC_seccion-10_Grupo-DragonsSlayers-2.0/releases/tag/Compiscript-Semantic-IDE-V1.2.0}.
+La rama \codigo{main} contiene cambios posteriores al tag, incluidos el panel de
+pruebas, los testers separados por fase y el empaquetado macOS/Linux; para obtener
+exactamente ese estado debe construirse desde la fuente vigente.
+
+El arranque fue verificado en macOS arm64 mediante Electron directo y en Linux arm64
+dentro de un contenedor con Xvfb. Los avisos de D-Bus en ambientes mínimos son
+benignos. Si un AppImage informa que falta \archivo{libz.so}, debe instalarse o
+exponerse la variante de desarrollo de zlib; los escritorios Linux habituales ya la
+incluyen.
 
 \section{Configuración reproducible}
 

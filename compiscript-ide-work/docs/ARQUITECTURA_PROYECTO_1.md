@@ -94,7 +94,7 @@ Las referencias a variables, clases, campos y métodos incrementan el contador d
 - `ActivitySidebar`, con `ExamplesExplorer` y `CompilerGuide`;
 - `EditorTabs`, con `CodeEditor` basado en Monaco para edición y resaltado;
 - `ProblemsPanel`, que agrupa diagnósticos léxicos, sintácticos y semánticos;
-- `RightDock`, que organiza `ResultOverviewPanel`, `SymbolTablePanel`, `ScopeTreePanel`, `ParseTreePanel`, `DocumentationPanel` y `ExportsPanel`;
+- `RightDock`, que organiza `ResultOverviewPanel`, `SymbolTablePanel`, `ScopeTreePanel`, `ParseTreePanel`, `TestsPanel`, `DocumentationPanel` y `ExportsPanel`;
 - `StatusBar` y `CommandPalette` para estado y acciones rápidas.
 
 La capa visual vigente adopta un lenguaje neobrutalista: fondo crema, superficies blancas o amarillas, bordes negros de dos píxeles, esquinas rectas y sombras sólidas desplazadas. Las ilustraciones documentales `compiler-pipeline-neobrutalist.png` y `scopes-symbol-table-neobrutalist.png` reproducen esa misma jerarquía visual como referencias conceptuales; no pretenden ser capturas literales de la aplicación.
@@ -115,7 +115,9 @@ La interfaz no decide si un programa es válido. Su responsabilidad es explicar 
 
 `src/__tests__/semantic/semanticAnalyzer.test.ts` contiene programas de éxito, un caso por diagnóstico y regresiones de flujo, clases, funciones y arreglos. `scopeManager.test.ts` prueba de forma directa inserción, recuperación, actualización y manejo de alcances, que son operaciones explícitas de la rúbrica.
 
-Las suites adicionales verifican el pipeline general, los archivos de ejemplo y los casos de rúbrica. La versión actual ejecuta 102 pruebas en 5 suites. La antigua suite de sincronización de ejemplos se retiró cuando `src/lib/examples.ts` empezó a importar directamente los archivos `.cps` mediante `?raw`, eliminando la duplicación que aquella prueba controlaba.
+Las suites adicionales verifican el pipeline general, los archivos de ejemplo, los casos de rúbrica y los casos predeterminados que expone `TestsPanel`. `lexer.test.ts` y `parser.test.ts` mantienen testers identificables por fase; `testCases.defaults.test.ts` garantiza que los casos integrados en la interfaz produzcan el resultado esperado. La versión actual ejecuta **115 pruebas en 7 suites**.
+
+La aplicación se empaqueta con Electron Builder. `exe:portable` genera Windows x64; `exe:mac` produce ZIP y DMG sin firma para Intel y Apple Silicon; `exe:linux` produce AppImage x64. Los targets macOS se construyen en macOS o en un runner macOS; Linux se construye de forma nativa, mediante WSL o Docker para conservar permisos y enlaces simbólicos. El último corte portable publicado es el [release V1.2.0](https://github.com/DanielBarillasM/Proyecto-01_CDC_seccion-10_Grupo-DragonsSlayers-2.0/releases/tag/Compiscript-Semantic-IDE-V1.2.0), mientras que `main` conserva las incorporaciones multiplataforma posteriores al tag.
 
 ## Extensión futura
 

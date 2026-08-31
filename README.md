@@ -15,7 +15,7 @@ IDE académico para ejecutar y explicar las fases léxica, sintáctica y semánt
 [![Electron](https://img.shields.io/badge/Electron-Desktop-47848F?style=flat-square&logo=electron&logoColor=white)](https://www.electronjs.org/)
 [![Tests](https://img.shields.io/badge/tests-115%20passing-15803D?style=flat-square)](compiscript-ide-work/src/__tests__)
 
-[![Descargar versión portable](https://img.shields.io/badge/Descargar-Compiscript%20Semantic%20IDE%20V1.1.0-7C3AED?style=for-the-badge)](https://github.com/DanielBarillasM/Proyecto-01_CDC_seccion-10_Grupo-DragonsSlayers-2.0/releases/tag/Compiscript-Semantic-IDE-V1.1.0)
+[![Descargar versión portable](https://img.shields.io/badge/Descargar-Compiscript%20Semantic%20IDE%20V1.2.0-7C3AED?style=for-the-badge)](https://github.com/DanielBarillasM/Proyecto-01_CDC_seccion-10_Grupo-DragonsSlayers-2.0/releases/tag/Compiscript-Semantic-IDE-V1.2.0)
 
 [Descargar portable](#descargar-versión-portable) · [Inicio rápido](#inicio-rápido) · [Capacidades](#qué-demuestra) · [Ejemplos](#ejemplos-preparados-para-la-rúbrica) · [Arquitectura](#arquitectura) · [Documentación](#documentación-y-exposición)
 
@@ -25,9 +25,9 @@ IDE académico para ejecutar y explicar las fases léxica, sintáctica y semánt
 
 ## Descargar versión portable
 
-La distribución recomendada para Windows es **Compiscript Semantic IDE V1.1.0 Portable**:
+La distribución recomendada para Windows es **Compiscript Semantic IDE V1.2.0 Portable**:
 
-**[Abrir el release oficial y descargar la versión portable](https://github.com/DanielBarillasM/Proyecto-01_CDC_seccion-10_Grupo-DragonsSlayers-2.0/releases/tag/Compiscript-Semantic-IDE-V1.1.0)**
+**[Abrir el release oficial V1.2.0 y descargar la versión portable](https://github.com/DanielBarillasM/Proyecto-01_CDC_seccion-10_Grupo-DragonsSlayers-2.0/releases/tag/Compiscript-Semantic-IDE-V1.2.0)**
 
 1. Abra el enlace del release.
 2. Despliegue la sección **Assets**.
@@ -38,11 +38,11 @@ La distribución recomendada para Windows es **Compiscript Semantic IDE V1.1.0 P
 
 Compatibilidad prevista: Windows 10/11 de 64 bits. Como el ejecutable académico no posee una firma digital comercial, Windows SmartScreen puede solicitar confirmación antes de abrirlo.
 
-> La versión portable V1.1.0 representa el corte estable publicado. La rama `main` contiene refinamientos posteriores de interfaz, mantenimiento y documentación; para obtener exactamente el estado actual del repositorio debe ejecutarse `npm run exe:portable` desde el código fuente vigente.
+> La versión portable V1.2.0 representa el corte estable más reciente publicado. La rama `main` contiene cambios posteriores, entre ellos el panel de pruebas del IDE, testers separados por fase y empaquetado macOS/Linux; para obtener exactamente el estado actual del repositorio debe ejecutarse `npm run exe:portable` desde el código fuente vigente.
 
 ### Ejecutable para macOS y Linux
 
-No hay release publicado para macOS/Linux; se generan localmente en un minuto con Node instalado, sin Xcode ni herramientas de compilación adicionales:
+No hay release publicado para macOS/Linux. Los artefactos deben generarse en un entorno compatible: macOS local o un runner macOS para `.zip`/`.dmg`, y Linux nativo, WSL o Docker para AppImage. No se requiere certificado comercial para estas compilaciones académicas:
 
 ```bash
 cd compiscript-ide-work
@@ -50,6 +50,8 @@ npm install
 npm run exe:mac     # macOS: .zip y .dmg sin firmar (Intel y Apple Silicon)
 npm run exe:linux   # Linux: AppImage x64, no requiere instalación
 ```
+
+Desde Windows, se recomienda ejecutar el build Linux dentro de WSL; la construcción directa sobre NTFS puede fallar cuando AppImage intenta crear enlaces simbólicos. El build de macOS no debe darse por reproducible desde Windows: utilice una Mac o un runner `macos-latest` de GitHub Actions.
 
 Los artefactos quedan en `compiscript-ide-work/release/`. Al igual que el portable de Windows, no llevan firma/notarización comercial: en macOS puede ser necesario click derecho → Abrir la primera vez (Gatekeeper); el AppImage solo necesita permiso de ejecución (`chmod +x`).
 
@@ -268,13 +270,13 @@ npm run test:examples
 npm run desktop
 
 # Artefactos de escritorio
-npm run exe:portable   # Windows portable (release V1.1.0)
+npm run exe:portable   # Windows portable (modalidad del release V1.2.0)
 npm run exe:installer  # Windows NSIS (no recomendado para distribuir)
 npm run exe:mac        # macOS .zip / .dmg, x64 y arm64, sin firmar
 npm run exe:linux      # Linux AppImage x64
 ```
 
-`exe:portable` genera la modalidad usada por el [release V1.1.0](https://github.com/DanielBarillasM/Proyecto-01_CDC_seccion-10_Grupo-DragonsSlayers-2.0/releases/tag/Compiscript-Semantic-IDE-V1.1.0). `exe:mac` y `exe:linux` no requieren certificado de firma, igual que el portable de Windows.
+`exe:portable` genera la modalidad usada por el [release V1.2.0](https://github.com/DanielBarillasM/Proyecto-01_CDC_seccion-10_Grupo-DragonsSlayers-2.0/releases/tag/Compiscript-Semantic-IDE-V1.2.0). `exe:mac` y `exe:linux` no requieren certificado de firma, igual que el portable de Windows.
 
 ## Decisiones frente al enunciado
 

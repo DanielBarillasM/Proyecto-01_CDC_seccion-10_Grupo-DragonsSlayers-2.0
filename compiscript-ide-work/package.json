@@ -1,6 +1,6 @@
 {
   "name": "dlp-proyectos-01-02-antlr",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "private": true,
   "description": "IDE de Compiscript con análisis léxico, sintáctico y semántico, tabla de símbolos y ámbitos usando ANTLR4 + TypeScript.",
   "type": "module",
